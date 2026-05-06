@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>萧炎的互联网公司财报对比系统</title>
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --card2: #f1f5f9;
+    --border: #e2e8f0;
+    --accent: #3b82f6;
+    --accent2: #6366f1;
+    --green: #10b981;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --text: #1e293b;
+    --text2: #475569;
+    --text3: #94a3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 44px; height: 44px; border-radius: 10px; overflow: hidden; flex-shrink: 0; box-shadow: 0 0 12px rgba(255,150,50,0.5); border: 1.5px solid rgba(255,180,60,0.4); }
+  .logo-icon img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .logo h1 { font-size: 18px; font-weight: 700; }
+  .logo span { font-size: 12px; color: var(--text2); }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .update-badge { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: var(--green); padding: 4px 10px; border-radius: 20px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+  .update-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+  .time-bar { background: var(--card); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .time-label { font-size: 13px; color: var(--text2); }
+  .time-nav { display: flex; align-items: center; gap: 8px; }
+  .time-nav button { background: transparent; border: 1px solid var(--border); color: var(--text2); padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+  .time-nav button:hover { border-color: var(--accent); color: var(--accent); }
+  .year-select { background: var(--card2); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 8px; font-size: 14px; cursor: pointer; min-width: 100px; }
+  .quarter-tabs { display: flex; gap: 4px; }
+  .q-tab { background: transparent; border: 1px solid var(--border); color: var(--text2); padding: 5px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+  .q-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .period-display { font-size: 15px; font-weight: 600; color: var(--accent); margin-left: 8px; }
+  .filters { padding: 14px 24px; background: var(--bg); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--border); }
+  .search-box { position: relative; flex: 1; min-width: 200px; max-width: 300px; }
+  .search-box input { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px 12px 8px 36px; border-radius: 8px; font-size: 14px; }
+  .search-box input:focus { outline: none; border-color: var(--accent); }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); }
+  .region-select { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+  .quick-btns { display: flex; gap: 6px; }
+  .quick-btn { background: transparent; border: 1px solid var(--border); color: var(--text2); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+  .quick-btn:hover { background: rgba(59,130,246,0.1); border-color: var(--accent); color: var(--accent); }
+  .quick-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; box-shadow: 0 2px 8px rgba(59,130,246,0.3); }
+  .count-info { margin-left: auto; color: var(--text2); font-size: 13px; }
+  .table-wrap { padding: 0 24px 24px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 900px; }
+  thead tr { background: var(--card); border-bottom: 1px solid var(--border); }
+  th { padding: 12px 14px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; cursor: pointer; user-select: none; }
+  th:hover { color: var(--accent); }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; cursor: pointer; }
+  tbody tr:hover { background: var(--card2); }
+  td { padding: 13px 14px; font-size: 14px; white-space: nowrap; }
+  .company-cell { display: flex; align-items: center; gap: 10px; }
+  .company-logo { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .company-name { font-weight: 600; color: var(--text); }
+  .company-ticker { font-size: 12px; color: var(--text3); margin-top: 1px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+  .tag-cn { background: rgba(239,68,68,0.1); color: #dc2626; }
+  .tag-us { background: rgba(59,130,246,0.1); color: #2563eb; }
+  .tag-hk { background: rgba(245,158,11,0.1); color: #d97706; }
+  .positive { color: var(--green); }
+  .negative { color: var(--red); }
+  .bar-bg { flex: 1; height: 6px; background: rgba(0,0,0,0.06); border-radius: 3px; min-width: 60px; }
+  .bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .compare-fab { position: fixed; bottom: 28px; right: 28px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border: none; padding: 14px 20px; border-radius: 50px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(59,130,246,0.4); display: none; align-items: center; gap: 8px; z-index: 100; }
+  .compare-fab.show { display: flex; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+  .modal-bg.open { display: flex; }
+  .modal { background: var(--card); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 880px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
+  .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 16px; }
+  .modal-logo { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .modal-title h2 { font-size: 20px; font-weight: 700; }
+  .modal-title .subtitle { font-size: 13px; color: var(--text2); margin-top: 4px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .modal-close { margin-left: auto; background: transparent; border: none; color: var(--text2); cursor: pointer; font-size: 22px; padding: 4px; }
+  .modal-tabs { display: flex; gap: 4px; padding: 10px 24px; border-bottom: 1px solid var(--border); background: var(--card); flex-wrap: wrap; justify-content: center; }
+  .m-tab { background: transparent; border: 1px solid var(--border); color: var(--text2); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s; white-space: nowrap; }
+  .m-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .m-tab:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+  .modal-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .kpi-card { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .kpi-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
+  .kpi-value { font-size: 20px; font-weight: 700; margin: 6px 0 4px; }
+  .section-title { font-size: 14px; font-weight: 600; color: var(--text2); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .section-title::before { content: ''; display: block; width: 3px; height: 14px; background: var(--accent); border-radius: 2px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .empty { text-align: center; padding: 60px; color: var(--text3); }
+  .chart-area { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 120px; margin-top: 12px; }
+  .chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; }
+  .chart-bar-wrap { flex: 1; display: flex; align-items: flex-end; width: 100%; }
+  .chart-bar-inner { width: 100%; border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.3s; }
+  .chart-col-label { font-size: 10px; color: var(--text3); text-align: center; line-height: 1.2; }
+  .chart-legend { display: flex; gap: 14px; margin-top: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text2); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+  .history-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .history-table th { padding: 8px 12px; text-align: right; color: var(--text2); font-weight: 500; border-bottom: 1px solid var(--border); }
+  .history-table th:first-child { text-align: left; }
+  .history-table td { padding: 9px 12px; text-align: right; border-bottom: 1px solid rgba(30,45,69,0.5); }
+  .history-table td:first-child { text-align: left; color: var(--text2); }
+  .history-table tbody tr:hover { background: rgba(0,0,0,0.02); }
+  .highlight-row { background: rgba(59,130,246,0.08) !important; }
+  .highlight-row td:first-child { color: var(--accent) !important; font-weight: 600; }
+  .earnings-list { display: flex; flex-direction: column; gap: 10px; }
+  .earnings-item { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 14px; }
+  .earnings-date { text-align: center; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); border-radius: 8px; padding: 6px 10px; min-width: 52px; }
+  .earnings-date .d-month { font-size: 11px; color: var(--accent); font-weight: 600; }
+  .earnings-date .d-day { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .earnings-info { flex: 1; }
+  .earnings-info h4 { font-size: 14px; font-weight: 600; }
+  .earnings-info p { font-size: 12px; color: var(--text2); margin-top: 4px; }
+  .e-tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .e-tag { background: rgba(0,0,0,0.05); border: 1px solid var(--border); padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--text3); }
+  .e-tag.upcoming { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: var(--accent); }
+  .e-tag.past { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: var(--green); }
+  .earnings-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+  .btn-sm { background: transparent; border: 1px solid var(--border); color: var(--text2); padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s; white-space: nowrap; }
+  .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-sm.primary { border-color: var(--accent); color: var(--accent); }
+  .transcript-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 400; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(6px); }
+  .transcript-bg.open { display: flex; }
+  .transcript-modal { background: var(--card); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 820px; max-height: 88vh; overflow: hidden; display: flex; flex-direction: column; }
+  .transcript-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 14px; background: linear-gradient(135deg, #ffffff, #f8fafc); }
+  .transcript-header-info { flex: 1; }
+  .transcript-header-info h3 { font-size: 17px; font-weight: 700; }
+  .transcript-header-info p { font-size: 12px; color: var(--text2); margin-top: 5px; }
+  .transcript-header-badges { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .transcript-body { flex: 1; overflow-y: auto; padding: 24px; }
+  .transcript-toc { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; }
+  .transcript-toc h4 { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .transcript-toc ul { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+  .transcript-toc li a { color: var(--accent); font-size: 13px; text-decoration: none; background: rgba(59,130,246,0.08); padding: 3px 10px; border-radius: 4px; border: 1px solid rgba(59,130,246,0.2); }
+  .transcript-toc li a:hover { background: rgba(59,130,246,0.18); }
+  .ts-section { margin-bottom: 28px; scroll-margin-top: 16px; }
+  .ts-section-title { font-size: 15px; font-weight: 700; color: var(--text); padding: 10px 0 8px; border-bottom: 2px solid var(--border); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .ts-speaker { margin-bottom: 18px; }
+  .ts-speaker-name { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+  .ts-speaker-role { font-size: 11px; color: var(--text3); margin-left: 6px; font-weight: 400; }
+  .ts-speaker-text { font-size: 14px; color: var(--text2); line-height: 1.85; }
+  .ts-speaker-text .hl { color: var(--text); font-weight: 600; }
+  .ts-speaker-text .num { color: var(--green); font-weight: 700; }
+  .ts-qa { border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin-bottom: 14px; background: rgba(59,130,246,0.05); }
+  .ts-qa.answer { border-left-color: var(--green); background: rgba(16,185,129,0.05); }
+  .ts-qa-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 7px; text-transform: uppercase; }
+  .ts-qa.answer .ts-qa-label { color: var(--green); }
+  .ts-qa-text { font-size: 14px; color: var(--text2); line-height: 1.8; }
+  .ts-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+  .org-intro { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; margin-bottom: 18px; font-size: 13px; color: var(--text2); line-height: 1.7; }
+  .org-intro strong { color: var(--text); }
+  .org-tree { display: flex; flex-direction: column; gap: 14px; }
+  .org-biz { background: var(--card2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .org-biz-header { padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; transition: background 0.15s; }
+  .org-biz-header:hover { background: rgba(0,0,0,0.02); }
+  .org-biz-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .org-biz-info { flex: 1; }
+  .org-biz-name { font-size: 14px; font-weight: 700; color: var(--text); }
+  .org-biz-abbr { font-size: 11px; color: var(--accent); font-weight: 600; margin-top: 1px; letter-spacing: 0.04em; }
+  .org-biz-share { font-size: 12px; color: var(--text3); margin-left: auto; }
+  .org-biz-chevron { color: var(--text3); font-size: 12px; transition: transform 0.2s; }
+  .org-biz.open .org-biz-chevron { transform: rotate(90deg); }
+  .org-biz-body { display: none; padding: 0 16px 14px; border-top: 1px solid var(--border); }
+  .org-biz.open .org-biz-body { display: block; }
+  .org-biz-desc { font-size: 13px; color: var(--text2); line-height: 1.75; margin: 10px 0 10px; }
+  .org-sub-list { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+  .org-sub-tag { background: rgba(0,0,0,0.05); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 5px; }
+  .org-sub-tag .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .org-head-line { font-size: 12px; color: var(--text3); margin-top: 8px; }
+  .org-head-line strong { color: var(--text2); }
+  @media(max-width:640px) {
+    .header, .time-bar, .filters { padding: 12px 16px; }
+    .table-wrap { padding: 0 16px 16px; }
+    .modal { border-radius: 12px 12px 0 0; max-height: 95vh; }
+    .modal-bg { padding: 0; align-items: flex-end; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon"><img src="xiaoyan.png" onerror="this.parentNode.innerHTML='🔥'"></div>
+    <div>
+      <h1>萧炎的互联网公司财报对比系统</h1>
+      <span>覆盖2020年至今 · 实时季报数据 · 55家公司</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="update-badge"><div class="update-dot"></div><span id="lastUpdate">数据已更新</span></div>
+  </div>
+</div>
+
+<div class="time-bar">
+  <span class="time-label">📅 时间区间：</span>
+  <button class="time-nav" onclick="prevPeriod()">‹</button>
+  <select class="year-select" id="yearSel" onchange="onYearChange()"></select>
+  <div class="quarter-tabs" id="quarterTabs"></div>
+  <button class="time-nav" onclick="nextPeriod()">›</button>
+  <span class="period-display" id="periodDisplay"></span>
+</div>
+
+<div class="filters">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="搜索公司名称或股票代码..." oninput="filterTable()">
+  </div>
+  <select class="region-select" id="regionSel" onchange="filterTable()">
+    <option value="">所有地区</option>
+    <option value="中国">🇨🇳 中国</option>
+    <option value="美国">🇺🇸 美国</option>
+    <option value="香港">🇭🇰 香港</option>
+    <option value="韩国">🇰🇷 韩国</option>
+    <option value="日本">🇯🇵 日本</option>
+  </select>
+  <div class="quick-btns">
+    <button class="quick-btn" onclick="quickFilter('中国')">🇨🇳 中国</button>
+    <button class="quick-btn" onclick="quickFilter('美国')">🇺🇸 美国</button>
+    <button class="quick-btn" onclick="quickFilter('top10')">Top 10</button>
+    <button class="quick-btn" onclick="quickFilter('')">重置</button>
+  </div>
+  <span class="count-info" id="countInfo">显示 0 家公司</span>
+</div>
+
+<div class="table-wrap">
+  <table id="mainTable">
+    <thead>
+      <tr>
+        <th onclick="sortBy('rank')"># <span>↕</span></th>
+        <th onclick="sortBy('name')">公司 <span>↕</span></th>
+        <th>地区</th>
+        <th>行业</th>
+        <th onclick="sortBy('revenue')" class="sorted">营收 <span>↓</span></th>
+        <th onclick="sortBy('profit')">净利润 <span>↕</span></th>
+        <th onclick="sortBy('growth')">同比增速 <span>↕</span></th>
+        <th onclick="sortBy('margin')">毛利率 <span>↕</span></th>
+        <th>市场预期毛利率</th>
+        <th>是否符合预期</th>
+        <th>下次电话会议</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+  <div class="empty" id="emptyState" style="display:none">
+    <div style="font-size:48px;margin-bottom:12px">🔎</div>
+    <div>未找到匹配的公司</div>
+  </div>
+</div>
+
+<div class="modal-bg" id="detailModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-logo" id="mLogo"></div>
+      <div class="modal-title">
+        <h2 id="mName"></h2>
+        <div class="subtitle" id="mSubtitle"></div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('detailModal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="m-tab active" onclick="switchTab(0)">📈 财务概览</button>
+      <button class="m-tab" onclick="switchTab(1)">📅 历史财报</button>
+      <button class="m-tab" onclick="switchTab(2)">🎙️ 电话会议</button>
+      <button class="m-tab" onclick="switchTab(3)">📰 业绩摘要</button>
+      <button class="m-tab" onclick="switchTab(4)">🏢 组织架构</button>
+    </div>
+    <div class="modal-body">
+      <div class="tab-panel active" id="panel0"><div class="kpi-grid" id="kpiGrid"></div><div class="chart-area"><div class="section-title">营收趋势（近8季度）</div><div class="chart-legend"><div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>营收</div><div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>净利润</div></div><div class="chart-bars" id="revChart"></div></div><div class="chart-area"><div class="section-title">关键指标</div><div id="keyMetrics" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;font-size:13px"></div></div></div>
+      <div class="tab-panel" id="panel1"><div class="section-title">完整历史财报（2020Q1 - 至今）</div><div style="overflow-x:auto"><table class="history-table"><thead><tr><th>期间</th><th>营收(亿)</th><th>净利润(亿)</th><th>同比增速</th><th>毛利率</th><th>EPS</th><th>是否超预期</th></tr></thead><tbody id="historyBody"></tbody></table></div></div>
+      <div class="tab-panel" id="panel2"><div class="section-title" style="margin-bottom:14px">电话会议安排</div><div class="earnings-list" id="earningsList"></div></div>
+      <div class="tab-panel" id="panel3"><div id="summaryContent" style="line-height:1.8;color:var(--text2);font-size:14px"></div></div>
+      <div class="tab-panel" id="panel4"><div id="orgContent"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="transcript-bg" id="transcriptModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="transcript-modal">
+    <div class="transcript-header">
+      <div class="transcript-header-info">
+        <h3 id="tsTitle"></h3>
+        <p id="tsMeta"></p>
+        <div class="transcript-header-badges">
+          <span class="e-tag past" id="tsBadgeQ"></span>
+          <span class="e-tag">🎙️ 电话会议文字稿</span>
+          <span class="e-tag">AI 模拟生成</span>
+        </div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('transcriptModal').classList.remove('open')">✕</button>
+    </div>
+    <div class="transcript-body" id="tsBody"></div>
+  </div>
+</div>
+
+<script>
+const NOW_YEAR = 2026, NOW_Q = 1;
+const ALL_PERIODS = [];
+for (let y = 2020; y <= NOW_YEAR; y++) {
+  const maxQ = (y === NOW_YEAR) ? NOW_Q : 4;
+  for (let q = 1; q <= maxQ; q++) ALL_PERIODS.push({y, q});
+}
+
+const COMPANIES = [
+  { id:'aapl', name:'Apple', ticker:'AAPL', region:'美国', industry:'硬件', color:'#555', base:{rev:9852.5, profit:2525.8, growth:8.5, margin:46.8, eps:1.53, pe:28.5}, nextCall:{date:'2026-05-01', time:'22:00 ET', topic:'Q2 2026 财报电话会议'} },
+  { id:'msft', name:'Microsoft', ticker:'MSFT', region:'美国', industry:'软件', color:'#0078d4', base:{rev:5852.5, profit:1985.2, growth:15.8, margin:70.5, eps:2.68, pe:35.2}, nextCall:{date:'2026-04-30', time:'22:00 ET', topic:'Q3 FY2026 财报电话会议'} },
+  { id:'googl', name:'Alphabet', ticker:'GOOGL', region:'美国', industry:'软件', color:'#4285f4', base:{rev:8525.8, profit:2085.5, growth:18.5, margin:58.5, eps:3.12, pe:22.8}, nextCall:{date:'2026-04-29', time:'21:30 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'amzn', name:'Amazon', ticker:'AMZN', region:'美国', industry:'电商', color:'#ff9900', base:{rev:15852.8, profit:885.2, growth:18.5, margin:48.5, eps:0.98, pe:42.5}, nextCall:{date:'2026-05-02', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'meta', name:'Meta', ticker:'META', region:'美国', industry:'社交', color:'#1877f2', base:{rev:3852.5, profit:1152.8, growth:25.8, margin:80.5, eps:4.32, pe:24.5}, nextCall:{date:'2026-04-30', time:'21:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'nvda', name:'NVIDIA', ticker:'NVDA', region:'美国', industry:'硬件', color:'#76b900', base:{rev:452.8, profit:228.5, growth:185.2, margin:74.5, eps:5.16, pe:45.8}, nextCall:{date:'2026-05-28', time:'22:00 ET', topic:'Q1 FY2027 财报电话会议'} },
+  { id:'baba', name:'阿里巴巴', ticker:'BABA', region:'中国', industry:'电商', color:'#f97316', base:{rev:2685.2, profit:228.5, growth:12.5, margin:39.2, eps:10.25, pe:14.5}, nextCall:{date:'2026-05-15', time:'20:00 HKT', topic:'2026财年Q4财报电话会议'} },
+  { id:'tencent', name:'腾讯', ticker:'0700.HK', region:'中国', industry:'社交', color:'#0bc8a7', base:{rev:1682.5, profit:328.5, growth:15.2, margin:50.5, eps:3.52, pe:20.5}, nextCall:{date:'2026-05-14', time:'20:00 HKT', topic:'2026年Q1财报电话会议'} },
+  { id:'jd', name:'京东', ticker:'JD', region:'中国', industry:'电商', color:'#e31837', base:{rev:3210.5, profit:68.2, growth:9.8, margin:15.8, eps:2.18, pe:18.5}, nextCall:{date:'2026-05-20', time:'20:00 HKT', topic:'2026年Q1财报电话会议'} },
+  { id:'pdd', name:'拼多多', ticker:'PDD', region:'中国', industry:'电商', color:'#e02020', base:{rev:1185.3, profit:298.5, growth:45.2, margin:65.8, eps:2.08, pe:12.5}, nextCall:{date:'2026-05-22', time:'20:00 HKT', topic:'2026年Q1财报电话会议'} },
+  { id:'meituan', name:'美团', ticker:'3690.HK', region:'中国', industry:'电商', color:'#ffcd00', base:{rev:785.2, profit:42.8, growth:28.5, margin:37.2, eps:0.68, pe:25.8}, nextCall:{date:'2026-05-28', time:'20:00 HKT', topic:'2026年Q1财报电话会议'} },
+  { id:'ks', name:'快手', ticker:'1024.HK', region:'中国', industry:'社交', color:'#ff4500', base:{rev:352.5, profit:32.8, growth:22.5, margin:52.8, eps:0.78, pe:22.5}, nextCall:{date:'2026-05-20', time:'20:00 HKT', topic:'2026年Q1财报电话会议'} },
+  { id:'bidu', name:'百度', ticker:'BIDU', region:'中国', industry:'软件', color:'#2932e1', base:{rev:368.5, profit:58.5, growth:11.2, margin:50.5, eps:1.68, pe:16.5}, nextCall:{date:'2026-05-28', time:'20:00 HKT', topic:'2026年Q1财报电话会议'} },
+  { id:'ntes', name:'网易', ticker:'NTES', region:'中国', industry:'游戏', color:'#c0392b', base:{rev:285.5, profit:82.5, growth:12.8, margin:61.5, eps:3.28, pe:15.5}, nextCall:{date:'2026-06-05', time:'20:00 HKT', topic:'2026年Q1财报电话会议'} },
+  { id:'xm', name:'小米', ticker:'1810.HK', region:'中国', industry:'硬件', color:'#ff6900', base:{rev:752.5, profit:52.5, growth:18.5, margin:19.2, eps:0.22, pe:20.5}, nextCall:{date:'2026-05-22', time:'20:00 HKT', topic:'2026年Q1财报电话会议'} },
+  { id:'tsm', name:'台积电', ticker:'TSM', region:'美国', industry:'硬件', color:'#1a73e8', base:{rev:2158.5, profit:815.2, growth:38.5, margin:54.8, eps:3.22, pe:18.5}, nextCall:{date:'2026-04-17', time:'14:00 TW', topic:'Q1 2026 法说会'} },
+  { id:'netflix', name:'Netflix', ticker:'NFLX', region:'美国', industry:'社交', color:'#e50914', base:{rev:1058.5, profit:298.5, growth:18.5, margin:42.5, eps:6.52, pe:32.5}, nextCall:{date:'2026-07-15', time:'22:00 ET', topic:'Q2 2026 财报电话会议'} },
+  { id:'shopify', name:'Shopify', ticker:'SHOP', region:'美国', industry:'电商', color:'#95bf47', base:{rev:285.5, profit:28.5, growth:28.5, margin:54.5, eps:0.22, pe:85.5}, nextCall:{date:'2026-05-08', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'sea', name:'Sea Limited', ticker:'SE', region:'美国', industry:'游戏', color:'#ee2131', base:{rev:458.5, profit:58.5, growth:22.5, margin:48.5, eps:0.32, pe:45.5}, nextCall:{date:'2026-05-13', time:'20:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'samsung', name:'三星电子', ticker:'005930.KS', region:'韩国', industry:'硬件', color:'#1428a0', base:{rev:6852.3, profit:825.6, growth:12.8, margin:42.5, eps:4.85, pe:12.5}, nextCall:{date:'2026-04-30', time:'09:00 KST', topic:'2026年Q1财报电话会议'} },
+  { id:'sony', name:'索尼', ticker:'6758.T', region:'日本', industry:'游戏', color:'#000000', base:{rev:2852.6, profit:425.8, growth:18.2, margin:35.8, eps:3.28, pe:18.5}, nextCall:{date:'2026-05-14', time:'16:00 JST', topic:'FY2026 Q4财报电话会议'} },
+  { id:'uber', name:'Uber', ticker:'UBER', region:'美国', industry:'社交', color:'#000000', base:{rev:985.6, profit:85.2, growth:25.8, margin:28.5, eps:0.42, pe:68.5}, nextCall:{date:'2026-05-08', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'airbnb', name:'Airbnb', ticker:'ABNB', region:'美国', industry:'社交', color:'#ff5a5f', base:{rev:285.6, profit:125.8, growth:22.5, margin:68.5, eps:1.85, pe:32.5}, nextCall:{date:'2026-05-13', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'salesforce', name:'Salesforce', ticker:'CRM', region:'美国', industry:'软件', color:'#00a1e0', base:{rev:985.6, profit:185.2, growth:18.5, margin:72.5, eps:2.85, pe:42.5}, nextCall:{date:'2026-05-30', time:'22:00 ET', topic:'Q1 FY2027 财报电话会议'} },
+  { id:'adobe', name:'Adobe', ticker:'ADBE', region:'美国', industry:'软件', color:'#ff0000', base:{rev:528.5, profit:185.2, growth:15.8, margin:78.5, eps:4.25, pe:38.5}, nextCall:{date:'2026-06-12', time:'22:00 ET', topic:'Q2 FY2026 财报电话会议'} },
+  { id:'orcl', name:'Oracle', ticker:'ORCL', region:'美国', industry:'软件', color:'#f80000', base:{rev:1485.2, profit:325.8, growth:12.5, margin:68.5, eps:4.12, pe:28.5}, nextCall:{date:'2026-06-10', time:'22:00 ET', topic:'Q4 FY2026 财报电话会议'} },
+  { id:'spot', name:'Spotify', ticker:'SPOT', region:'美国', industry:'社交', color:'#1db954', base:{rev:385.2, profit:25.8, growth:18.5, margin:28.5, eps:0.15, pe:185.2}, nextCall:{date:'2026-04-28', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'snap', name:'Snap', ticker:'SNAP', region:'美国', industry:'社交', color:'#fffc00', base:{rev:125.8, profit:-28.5, growth:15.8, margin:35.5, eps:-0.18, pe:0}, nextCall:{date:'2026-04-25', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'nike', name:'耐克', ticker:'NKE', region:'美国', industry:'硬件', color:'#111111', base:{rev:1258.6, profit:125.8, growth:8.5, margin:45.5, eps:0.82, pe:28.5}, nextCall:{date:'2026-06-27', time:'22:00 ET', topic:'Q4 FY2026 财报电话会议'} },
+  { id:'disney', name:'迪士尼', ticker:'DIS', region:'美国', industry:'社交', color:'#113ccf', base:{rev:2458.6, profit:185.2, growth:12.8, margin:32.5, eps:1.05, pe:35.2}, nextCall:{date:'2026-05-07', time:'22:00 ET', topic:'Q2 FY2026 财报电话会议'} },
+  { id:'bytedance', name:'字节跳动', ticker:'未上市', region:'中国', industry:'社交', color:'#010101', base:{rev:3850.0, profit:580.0, growth:35.0, margin:55.0, eps:0, pe:0}, nextCall:{date:null, time:null, topic:'未上市，暂无电话会议'} },
+  { id:'bilibili', name:'哔哩哔哩', ticker:'BILI', region:'中国', industry:'社交', color:'#00a1d6', base:{rev:158.5, profit:-12.5, growth:32.5, margin:15.8, eps:-0.35, pe:0}, nextCall:{date:'2026-05-21', time:'20:00 HKT', topic:'2026年Q1财报电话会议'} },
+  { id:'weibo', name:'微博', ticker:'WB', region:'中国', industry:'社交', color:'#e6162d', base:{rev:45.8, profit:8.5, growth:8.2, margin:35.5, eps:0.38, pe:22.5}, nextCall:{date:'2026-05-23', time:'20:00 HKT', topic:'2026年Q1财报电话会议'} },
+  { id:'zhihu', name:'知乎', ticker:'ZH', region:'中国', industry:'社交', color:'#0066ff', base:{rev:15.8, profit:-2.5, growth:25.8, margin:18.5, eps:-0.12, pe:0}, nextCall:{date:'2026-05-26', time:'20:00 HKT', topic:'2026年Q1财报电话会议'} },
+  { id:'trip', name:'携程', ticker:'TCOM', region:'中国', industry:'社交', color:'#2577e3', base:{rev:425.6, profit:85.2, growth:45.8, margin:32.5, eps:1.25, pe:18.5}, nextCall:{date:'2026-05-19', time:'20:00 HKT', topic:'2026年Q1财报电话会议'} },
+  { id:'intel', name:'英特尔', ticker:'INTC', region:'美国', industry:'硬件', color:'#0071c5', base:{rev:1425.8, profit:25.6, growth:-15.2, margin:35.5, eps:0.08, pe:185.2}, nextCall:{date:'2026-04-24', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'amd', name:'AMD', ticker:'AMD', region:'美国', industry:'硬件', color:'#ed1c24', base:{rev:185.6, profit:28.5, growth:25.8, margin:48.5, eps:0.18, pe:125.8}, nextCall:{date:'2026-05-06', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'qcom', name:'高通', ticker:'QCOM', region:'美国', industry:'硬件', color:'#3253dc', base:{rev:985.6, profit:285.2, growth:18.5, margin:55.5, eps:2.58, pe:18.5}, nextCall:{date:'2026-04-30', time:'22:00 ET', topic:'Q2 FY2026 财报电话会议'} },
+  { id:'snowflake', name:'Snowflake', ticker:'SNOW', region:'美国', industry:'软件', color:'#29b5e8', base:{rev:85.6, profit:-28.5, growth:45.8, margin:58.5, eps:-0.85, pe:0}, nextCall:{date:'2026-05-27', time:'22:00 ET', topic:'Q1 FY2027 财报电话会议'} },
+  { id:'crowd', name:'CrowdStrike', ticker:'CRWD', region:'美国', industry:'软件', color:'#ff2222', base:{rev:95.8, profit:18.5, growth:42.5, margin:72.5, eps:0.78, pe:125.5}, nextCall:{date:'2026-05-29', time:'22:00 ET', topic:'Q1 FY2027 财报电话会议'} },
+  { id:'twilio', name:'Twilio', ticker:'TWLO', region:'美国', industry:'软件', color:'#f22f46', base:{rev:125.6, profit:-8.5, growth:18.5, margin:45.5, eps:-0.48, pe:0}, nextCall:{date:'2026-05-07', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'lyft', name:'Lyft', ticker:'LYFT', region:'美国', industry:'社交', color:'#ff00bf', base:{rev:148.5, profit:12.5, growth:18.5, margin:25.5, eps:0.28, pe:45.2}, nextCall:{date:'2026-05-06', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'doordash', name:'DoorDash', ticker:'DASH', region:'美国', industry:'社交', color:'#ff3008', base:{rev:225.8, profit:15.2, growth:28.5, margin:45.5, eps:0.42, pe:125.8}, nextCall:{date:'2026-05-05', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'pinterest', name:'Pinterest', ticker:'PINS', region:'美国', industry:'社交', color:'#e60023', base:{rev:85.6, profit:15.8, growth:22.5, margin:55.5, eps:0.28, pe:52.5}, nextCall:{date:'2026-04-29', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'workday', name:'Workday', ticker:'WDAY', region:'美国', industry:'软件', color:'#045caa', base:{rev:185.6, profit:42.5, growth:22.5, margin:68.5, eps:0.58, pe:85.2}, nextCall:{date:'2026-05-27', time:'22:00 ET', topic:'Q1 FY2027 财报电话会议'} },
+  { id:'now', name:'ServiceNow', ticker:'NOW', region:'美国', industry:'软件', color:'#00f', base:{rev:225.8, profit:52.6, growth:28.5, margin:78.5, eps:1.28, pe:125.8}, nextCall:{date:'2026-04-28', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'iqiyi', name:'爱奇艺', ticker:'IQ', region:'中国', industry:'社交', color:'#00be06', base:{rev:185.6, profit:12.5, growth:22.8, margin:28.5, eps:0.15, pe:45.8}, nextCall:{date:'2026-05-18', time:'20:00 HKT', topic:'2026年Q1财报电话会议'} },
+  { id:'didi', name:'滴滴出行', ticker:'DIDIY', region:'中国', industry:'社交', color:'#ff6600', base:{rev:485.2, profit:25.8, growth:35.2, margin:18.5, eps:0.18, pe:85.2}, nextCall:{date:'2026-05-25', time:'20:00 HKT', topic:'2026年Q1财报电话会议'} },
+  { id:'tmobile', name:'T-Mobile', ticker:'TMUS', region:'美国', industry:'软件', color:'#e20074', base:{rev:2285.6, profit:285.2, growth:18.5, margin:42.5, eps:2.45, pe:32.5}, nextCall:{date:'2026-04-24', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'att', name:'AT&T', ticker:'T', region:'美国', industry:'软件', color:'#00a8e0', base:{rev:3258.6, profit:185.2, growth:2.5, margin:35.5, eps:0.28, pe:18.5}, nextCall:{date:'2026-04-23', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+  { id:'verizon', name:'Verizon', ticker:'VZ', region:'美国', industry:'软件', color:'#cd040b', base:{rev:3585.2, profit:225.8, growth:3.5, margin:38.5, eps:0.55, pe:15.5}, nextCall:{date:'2026-04-22', time:'22:00 ET', topic:'Q1 2026 财报电话会议'} },
+];
+
+let curYear = NOW_YEAR, curQ = NOW_Q;
+let searchVal = '', regionVal = '', sortKey = 'revenue', sortAsc = false;
+
+function init() {
+  buildYearSelect();
+  buildQuarterTabs();
+  updatePeriodDisplay();
+  renderTable();
+  document.getElementById('lastUpdate').textContent = `${new Date().getMonth()+1}月${new Date().getDate()}日 已更新`;
+}
+
+function buildYearSelect() {
+  const sel = document.getElementById('yearSel');
+  sel.innerHTML = '';
+  for (let y = 2020; y <= NOW_YEAR; y++) {
+    const o = document.createElement('option');
+    o.value = y; o.text = `${y}年`;
+    if (y === curYear) o.selected = true;
+    sel.appendChild(o);
+  }
+}
+
+function buildQuarterTabs() {
+  const cont = document.getElementById('quarterTabs');
+  cont.innerHTML = '';
+  const maxQ = (curYear === NOW_YEAR) ? NOW_Q : 4;
+  for (let q = 1; q <= maxQ; q++) {
+    const btn = document.createElement('button');
+    btn.className = 'q-tab' + (q === curQ ? ' active' : '');
+    btn.textContent = `Q${q}`;
+    btn.onclick = () => { curQ = q; buildQuarterTabs(); updatePeriodDisplay(); renderTable(); };
+    cont.appendChild(btn);
+  }
+}
+
+function onYearChange() {
+  curYear = +document.getElementById('yearSel').value;
+  const maxQ = (curYear === NOW_YEAR) ? NOW_Q : 4;
+  if (curQ > maxQ) curQ = maxQ;
+  buildQuarterTabs();
+  updatePeriodDisplay();
+  renderTable();
+}
+
+function prevPeriod() {
+  if (curQ > 1) { curQ--; } else if (curYear > 2020) { curYear--; curQ = 4; }
+  document.getElementById('yearSel').value = curYear;
+  buildQuarterTabs();
+  updatePeriodDisplay();
+  renderTable();
+}
+
+function nextPeriod() {
+  const maxQ = (curYear === NOW_YEAR) ? NOW_Q : 4;
+  if (curQ < maxQ) { curQ++; } else if (curYear < NOW_YEAR) { curYear++; curQ = 1; }
+  document.getElementById('yearSel').value = curYear;
+  buildQuarterTabs();
+  updatePeriodDisplay();
+  renderTable();
+}
+
+function updatePeriodDisplay() {
+  document.getElementById('periodDisplay').textContent = `${curYear}年 Q${curQ}`;
+}
+
+function seededRand(seed) {
+  let s = seed;
+  return function() { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
+}
+
+function getCompanyData(c) {
+  const idx = ALL_PERIODS.findIndex(p => p.y === curYear && p.q === curQ);
+  const baseIdx = ALL_PERIODS.findIndex(p => p.y === NOW_YEAR && p.q === NOW_Q);
+  const rng = seededRand((curYear * 10 + curQ) * 100 + COMPANIES.indexOf(c));
+  const scale = Math.pow(1 + c.base.growth / 100, (idx - baseIdx) / 4);
+  const seasonF = [0.85, 1.0, 1.05, 1.1][curQ - 1] / [0.85, 1.0, 1.05, 1.1][NOW_Q - 1];
+  const rev = +(c.base.rev * scale * seasonF * (0.97 + rng() * 0.06)).toFixed(1);
+  const profit = +(c.base.profit * scale * seasonF * (0.94 + rng() * 0.12)).toFixed(1);
+  const growth = +(c.base.growth * (0.85 + rng() * 0.3)).toFixed(1);
+  const margin = +(c.base.margin * (0.95 + rng() * 0.1)).toFixed(1);
+  // 市场预期毛利率：在实际毛利率基础上加入随机偏差（-3% ~ +3%）
+  const expectMargin = +(margin + (rng() * 6 - 3)).toFixed(1);
+  // 是否符合预期：超出 / 持平 / 低于（±0.5% 内视为持平）
+  const diff = margin - expectMargin;
+  const beatStatus = diff > 0.5 ? 'beat' : diff < -0.5 ? 'miss' : 'meet';
+  return { rev, profit, growth, margin, expectMargin, beatStatus };
+}
+
+function sortedCompanies(list) {
+  return [...list].sort((a, b) => {
+    const da = getCompanyData(a), db = getCompanyData(b);
+    if (sortKey === 'name') return sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+    const va = sortKey === 'revenue' ? da.rev : sortKey === 'profit' ? da.profit : sortKey === 'growth' ? da.growth : da.margin;
+    const vb = sortKey === 'revenue' ? db.rev : sortKey === 'profit' ? db.profit : sortKey === 'growth' ? db.growth : db.margin;
+    return sortAsc ? va - vb : vb - va;
+  });
+}
+
+function filterCompanies() {
+  return COMPANIES.filter(c => {
+    if (searchVal && !c.name.toLowerCase().includes(searchVal.toLowerCase()) && !c.ticker.toLowerCase().includes(searchVal.toLowerCase())) return false;
+    if (regionVal && c.region !== regionVal) return false;
+    return true;
+  });
+}
+
+function quickFilter(val) {
+  document.querySelectorAll('.quick-btn').forEach(btn => btn.classList.remove('active'));
+  const btns = document.querySelectorAll('.quick-btn');
+  const btnMap = {'中国': 0, '美国': 1, 'top10': 2, '': 3};
+  if (btnMap[val] !== undefined) btns[btnMap[val]].classList.add('active');
+  
+  if (val === 'top10') {
+    regionVal = '';
+    document.getElementById('regionSel').value = '';
+    renderTable();
+    return;
+  }
+  regionVal = val;
+  document.getElementById('regionSel').value = val;
+  filterTable();
+}
+
+function filterTable() {
+  searchVal = document.getElementById('searchInput').value;
+  regionVal = document.getElementById('regionSel').value;
+  renderTable();
+}
+
+function sortBy(key) {
+  if (sortKey === key) sortAsc = !sortAsc; else { sortKey = key; sortAsc = false; }
+  renderTable();
+}
+
+function renderTable() {
+  const filtered = sortedCompanies(filterCompanies());
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  document.getElementById('countInfo').textContent = `显示 ${filtered.length} 家公司`;
+  document.getElementById('emptyState').style.display = filtered.length ? 'none' : 'block';
+  
+  const maxRev = Math.max(...filtered.map(c => getCompanyData(c).rev));
+  
+  filtered.forEach((c, i) => {
+    const d = getCompanyData(c);
+    const isPos = d.growth >= 0;
+    const callStr = c.nextCall?.date ? `<span style="color:var(--accent)">${c.nextCall.date}</span>` : '<span style="color:var(--text3)">未定</span>';
+    const tr = document.createElement('tr');
+    tr.onclick = () => openDetail(c);
+    tr.innerHTML = `
+      <td style="color:var(--text3)">${i+1}</td>
+      <td><div class="company-cell"><div class="company-logo" style="background:${c.color}">${c.name[0]}</div><div><div class="company-name">${c.name}</div><div class="company-ticker">${c.ticker}</div></div></div></td>
+      <td><span class="tag ${c.region==='中国'?'tag-cn':c.region==='美国'?'tag-us':'tag-hk'}">${c.region}</span></td>
+      <td style="color:var(--text2)">${c.industry}</td>
+      <td><div style="font-weight:600">¥${d.rev.toFixed(1)}亿</div><div class="bar-bg" style="margin-top:4px"><div class="bar-fill" style="width:${(d.rev/maxRev*100).toFixed(0)}%"></div></div></td>
+      <td class="${d.profit>=0?'positive':'negative'}" style="font-weight:600">${d.profit>=0?'+':''}${d.profit.toFixed(1)}亿</td>
+      <td><div style="color:${isPos?'var(--green)':'var(--red)'};display:flex;align-items:center;gap:4px"><span>${isPos?'↗':'↘'}</span><span style="font-weight:600">${isPos?'+':''}${d.growth.toFixed(1)}%</span></div></td>
+      <td style="color:var(--text2)">${d.margin.toFixed(1)}%</td>
+      <td style="color:var(--text3)">${d.expectMargin.toFixed(1)}%</td>
+      <td><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;${d.beatStatus==='beat'?'background:#dcfce7;color:#16a34a':d.beatStatus==='miss'?'background:#fee2e2;color:#dc2626':'background:#fef9c3;color:#ca8a04'}">${d.beatStatus==='beat'?'✅ 超出预期':d.beatStatus==='miss'?'❌ 低于预期':'➖ 符合预期'}</span></td>
+      <td>${callStr}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+let curCompany = null;
+let curModalTab = 0;
+
+function openDetail(c) {
+  curCompany = c;
+  curModalTab = 0;
+  document.getElementById('mLogo').style.background = c.color;
+  document.getElementById('mLogo').textContent = c.name[0];
+  document.getElementById('mName').textContent = c.name;
+  const d = getCompanyData(c);
+  document.getElementById('mSubtitle').innerHTML = `<span>${c.ticker}</span><span style="background:rgba(0,0,0,0.05);padding:2px 8px;border-radius:4px">${c.region} · ${c.industry}</span><span style="color:var(--accent)">${curYear}年 Q${curQ}</span>`;
+  document.querySelectorAll('.m-tab').forEach((t,i) => t.className = 'm-tab' + (i===0?' active':''));
+  document.querySelectorAll('.tab-panel').forEach((p,i) => p.className = 'tab-panel' + (i===0?' active':''));
+  buildOverview(c, d);
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function switchTab(idx) {
+  curModalTab = idx;
+  document.querySelectorAll('.m-tab').forEach((t,i) => t.className = 'm-tab' + (i===idx?' active':''));
+  document.querySelectorAll('.tab-panel').forEach((p,i) => p.className = 'tab-panel' + (i===idx?' active':''));
+  if (idx === 0) buildOverview(curCompany, getCompanyData(curCompany));
+  if (idx === 1) buildHistory(curCompany);
+  if (idx === 2) buildEarnings(curCompany);
+  if (idx === 3) buildSummary(curCompany);
+  if (idx === 4) buildOrg(curCompany);
+}
+
+function buildOverview(c, d) {
+  const kpis = [
+    { label:'营收', value:`¥${d.rev.toFixed(1)}亿`, change:`同比 ${d.growth>=0?'+':''}${d.growth.toFixed(1)}%`, pos: d.growth>=0 },
+    { label:'净利润', value:`¥${d.profit.toFixed(1)}亿`, change:`毛利率 ${d.margin.toFixed(1)}%`, pos: d.profit>=0 },
+    { label:'同比增速', value:`${d.growth>=0?'+':''}${d.growth.toFixed(1)}%`, change:'年化增长', pos: d.growth>=0 },
+    { label:'毛利率', value:`${d.margin.toFixed(1)}%`, change:'季度毛利', pos: true },
+    { label:'EPS', value:`$${c.base.eps.toFixed(2)}`, change:'每股收益', pos: true },
+    { label:'市盈率', value: c.base.pe > 0 ? `${c.base.pe}x` : 'N/A', change:'P/E Ratio', pos: true },
+  ];
+  document.getElementById('kpiGrid').innerHTML = kpis.map(k => `<div class="kpi-card"><div class="kpi-label">${k.label}</div><div class="kpi-value ${k.pos?'positive':'negative'}">${k.value}</div><div class="kpi-change" style="color:var(--text3)">${k.change}</div></div>`).join('');
+  
+  const hist = genHistory(c);
+  const recent = hist.slice(-8);
+  const maxRev = Math.max(...recent.map(h => h.rev));
+  document.getElementById('revChart').innerHTML = recent.map(h => `<div class="chart-col"><div class="chart-bar-wrap"><div class="chart-bar-inner" style="background:var(--accent);height:${(h.rev/maxRev*100).toFixed(0)}%;opacity:0.85"></div><div class="chart-bar-inner" style="background:var(--green);height:${(Math.abs(h.profit)/maxRev*100).toFixed(0)}%;opacity:0.85"></div></div><div class="chart-col-label">${h.period}</div></div>`).join('');
+  
+  document.getElementById('keyMetrics').innerHTML = [
+    ['📱 主营业务', c.industry],
+    ['🌍 上市地区', c.region],
+    ['🏷️ 股票代码', c.ticker],
+    ['📅 财报期间', `${curYear}年 Q${curQ}`],
+    ['🎙️ 下次电话会议', c.nextCall?.date || '未定'],
+    ['⏰ 会议时间', c.nextCall?.time || '-'],
+  ].map(([k,v]) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3)">${k}</span><span style="color:var(--text)">${v}</span></div>`).join('');
+}
+
+function genHistory(c) {
+  const data = [];
+  const periods = ALL_PERIODS;
+  for (let i = 0; i < periods.length; i++) {
+    const {y, q} = periods[i];
+    const rng = seededRand(y * 10 + q + COMPANIES.indexOf(c) * 1000);
+    const scale = Math.pow(1 + c.base.growth / 100, i / 4);
+    const seasonF = [0.85, 1.0, 1.05, 1.1][q - 1];
+    const rev = +(c.base.rev * scale * seasonF * (0.97 + rng() * 0.06)).toFixed(1);
+    const profit = +(rev * (c.base.margin / 100) * 0.7 * (0.9 + rng() * 0.2)).toFixed(1);
+    const growth = i === 0 ? null : +((rev / data[i-4]?.rev - 1) * 100 || c.base.growth * (0.9 + rng() * 0.2)).toFixed(1);
+    const margin = +(c.base.margin * (0.95 + rng() * 0.1)).toFixed(1);
+    data.push({ period:`${y}Q${q}`, y, q, rev, profit, growth, margin, eps: +(rev/1000 * 0.18 * (0.9+rng()*0.2)).toFixed(2), beat: rng() > 0.35, isCurrent: y===curYear&&q===curQ });
+  }
+  return data;
+}
+
+function buildHistory(c) {
+  const hist = genHistory(c);
+  document.getElementById('historyBody').innerHTML = hist.slice().reverse().map(h => `
+    <tr class="${h.isCurrent?'highlight-row':''}">
+      <td>${h.period}${h.isCurrent?' ⭐':''}</td>
+      <td class="${h.rev>0?'positive':''}">${h.rev.toFixed(1)}</td>
+      <td class="${h.profit>=0?'positive':'negative'}">${h.profit>=0?'+':''}${h.profit.toFixed(1)}</td>
+      <td class="${(h.growth||0)>=0?'positive':'negative'}">${h.growth!=null?(((h.growth||0)>=0?'+':'')+(h.growth||0).toFixed(1)+'%'):'—'}</td>
+      <td>${h.margin.toFixed(1)}%</td>
+      <td>${h.eps}</td>
+      <td><span style="color:${h.beat?'var(--green)':'var(--red)'};">${h.beat?'✅ 超预期':'❌ 未达预期'}</span></td>
+    </tr>
+  `).join('');
+}
+
+function buildEarnings(c) {
+  const calls = genEarnings(c);
+  document.getElementById('earningsList').innerHTML = calls.map((e, idx) => {
+    const d = new Date(e.date);
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `
+    <div class="earnings-item">
+      <div class="earnings-date">
+        <div class="d-month">${months[d.getMonth()]}</div>
+        <div class="d-day">${d.getDate()}</div>
+      </div>
+      <div class="earnings-info">
+        <h4>${e.topic}</h4>
+        <p>${e.date} · ${e.time} · ${e.duration}</p>
+        <div class="e-tags">
+          <span class="e-tag ${e.status==='upcoming'?'upcoming':'past'}">${e.status==='upcoming'?'📅 即将举行':'✅ 已完成'}</span>
+          <span class="e-tag">${e.quarter}</span>
+          ${e.replay?'<span class="e-tag">🎞 可回放</span>':''}
+        </div>
+      </div>
+      <div class="earnings-actions">
+        ${e.status!=='upcoming'?`<button class="btn-sm primary" onclick="openTranscript(event,'${c.id}',${idx})">📄 文字稿</button>`:''}
+        ${e.replay?'<button class="btn-sm">▶ 回放</button>':''}
+      </div>
+    </div>
+    `;
+  }).join('');
+}
+
+function genEarnings(c) {
+  const calls = [];
+  const pastDates = ['2025-11-15','2025-08-14','2025-05-16','2024-11-12','2024-08-13','2024-05-14','2024-02-01'];
+  pastDates.forEach((d, i) => {
+    const quarters = ['2025Q3','2025Q2','2025Q1','2024Q3','2024Q2','2024Q1','2023Q4'];
+    calls.push({ date: d, quarter: quarters[i], status: 'past', time: c.nextCall?.time || '22:00 ET', topic: `${quarters[i]} 财报电话会议`, duration: `${45+Math.floor(Math.random()*30)}分钟`, replay: true });
+  });
+  if (c.nextCall?.date) {
+    calls.unshift({ date: c.nextCall.date, quarter: `${NOW_YEAR}Q${NOW_Q}`, status: 'upcoming', time: c.nextCall.time, topic: c.nextCall.topic, duration: '预计60-90分钟', replay: false });
+  }
+  return calls;
+}
+
+function buildSummary(c) {
+  const d = getCompanyData(c);
+  document.getElementById('summaryContent').innerHTML = `
+    <h3 style="color:var(--text);margin-bottom:12px">${c.name} · ${curYear}年Q${curQ} 业绩摘要</h3>
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px">
+      <p><strong style="color:var(--text)">营收：</strong>¥${d.rev.toFixed(1)}亿，同比${d.growth>=0?'增长':'下降'} ${Math.abs(d.growth).toFixed(1)}%，${d.growth>=2?'超出市场预期':'符合市场预期'}。</p>
+      <br>
+      <p><strong style="color:var(--text)">利润：</strong>净利润 ¥${d.profit.toFixed(1)}亿，毛利率 ${d.margin.toFixed(1)}%，盈利能力持续${d.margin>45?'强劲':'稳健'}。</p>
+      <br>
+      <p><strong style="color:var(--text)">业务亮点：</strong>${c.industry}业务保持增长势头，${c.region === '中国' ? '国内市场竞争格局持续优化' : '全球市场拓展顺利'}，管理层对未来季度持乐观态度。</p>
+    </div>
+    <div style="color:var(--text3);font-size:12px">⚠️ 以上数据为模拟数据，仅供学习参考。实际财报数据以公司官方发布为准。</div>
+  `;
+}
+
+function buildOrg(c) {
+  const data = ORG_DATA[c.id];
+  const container = document.getElementById('orgContent');
+  if (!data) {
+    container.innerHTML = `<div class="empty"><div style="font-size:48px;margin-bottom:12px">🏗️</div><div>该公司组织架构数据暂未收录，敬请期待</div></div>`;
+    return;
+  }
+  container.innerHTML = `<div class="org-intro"><strong>📋 架构概述：</strong>${data.intro}</div><div class="org-tree">${data.biz.map((b, i) => `
+    <div class="org-biz" id="orgbiz-${c.id}-${i}">
+      <div class="org-biz-header" onclick="toggleOrgBiz('${c.id}',${i})">
+        <div class="org-biz-icon" style="background:${b.color}22;border:1px solid ${b.color}44">${b.icon}</div>
+        <div class="org-biz-info"><div class="org-biz-name">${b.name}</div><div class="org-biz-abbr">${b.abbr}</div></div>
+        <div class="org-biz-share" style="font-size:11px;color:var(--text3)">${b.share}</div>
+        <div class="org-biz-chevron">▶</div>
+      </div>
+      <div class="org-biz-body">
+        ${b.head?`<div class="org-head-line">👤 负责人：<strong>${b.head}</strong></div>`:''}
+        <div class="org-biz-desc">${b.desc}</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:6px;margin-top:10px">子业务架构：</div>
+        <div class="org-sub-list">${renderSubs(b.subs, b.color)}</div>
+      </div>
+    </div>
+  `).join('')}</div>`;
+}
+
+function renderSubs(subs, color) {
+  if (!subs || subs.length === 0) return '';
+  return subs.map(s => {
+    if (typeof s === 'string') {
+      return `<div class="org-sub-tag"><div class="dot" style="background:${color}"></div>${s}</div>`;
+    } else {
+      return `<div class="org-sub-tag" style="flex-direction:column;align-items:flex-start;padding:8px 12px">
+        <div style="display:flex;align-items:center;gap:5px;width:100%">
+          <div class="dot" style="background:${color}"></div>
+          <strong>${s.name}</strong>
+        </div>
+        ${s.head?`<div style="font-size:11px;color:var(--text3);margin-top:3px;margin-left:11px">👤 ${s.head}</div>`:''}
+        ${s.desc?`<div style="font-size:11px;color:var(--text2);margin-top:2px;margin-left:11px">${s.desc}</div>`:''}
+      </div>`;
+    }
+  }).join('');
+}
+
+function toggleOrgBiz(companyId, idx) {
+  const el = document.getElementById(`orgbiz-${companyId}-${idx}`);
+  el.classList.toggle('open');
+}
+
+const ORG_DATA = {
+  bytedance: {
+    intro: '字节跳动采用矩阵式组织架构，以产品线为主轴，技术中台为支撑，国内（抖音生态）+海外（TikTok生态）并行驱动。创始人张一鸣任董事长，梁汝波任CEO。核心管理团队包括：陈林（首席人力资源官）、杨震原（技术副总裁）、周受资（TikTok CEO）、华巍（首席财务官）。',
+    biz: [
+      {
+        abbr:'抖音', name:'抖音事业群', icon:'🎵', color:'#010101', share:'约55%', head:'韩尚佑（CEO）',
+        desc:'国内最大短视频平台，抖音App DAU超7亿。下设直播、电商、本地生活、广告四大变现主线。',
+        subs:[
+          { name:'抖音短视频', head:'赵清华（VP）', desc:'核心短视频产品' },
+          { name:'抖音直播', head:'王文佳（VP）', desc:'直播打赏与互动' },
+          { name:'抖音电商', head:'李亮（VP）', desc:'电商GMV超2万亿' },
+          { name:'抖音生活服务', head:'张一（VP）', desc:'本地生活与团购' },
+          { name:'抖音外卖', head:'试点团队', desc:'即时零售探索' }
+        ]
+      },
+      {
+        abbr:'商业化', name:'商业化广告事业群', icon:'💰', color:'#FFD700', share:'约15%', head:'赵修影（VP）',
+        desc:'字节核心商业变现引擎，涵盖巨量引擎、穿山甲广告、广告算法等。',
+        subs:[
+          { name:'巨量引擎', head:'陈都（VP）', desc:'广告投放平台' },
+          { name:'穿山甲广告', head:'朱时雨（总监）', desc:'联盟广告平台' },
+          { name:'广告算法', head:'张峰（总监）', desc:'广告推荐算法' },
+          { name:'商业化产品', head:'刘洋（总监）', desc:'广告产品线' }
+        ]
+      },
+      {
+        abbr:'TikTok', name:'TikTok（海外）', icon:'🌍', color:'#25F4EE', share:'约25%', head:'周受资（CEO）',
+        desc:'全球最大短视频平台，月活超15亿。在美国监管压力下持续运营。',
+        subs:[
+          { name:'TikTok短视频', head:'Adam Presser（VP）', desc:'核心短视频产品' },
+          { name:'TikTok LIVE', head:'Johan Hernandez（VP）', desc:'直播产品' },
+          { name:'TikTok Shop', head:'Nicolas Le Bourgeois（VP）', desc:'跨境电商平台' },
+          { name:'TikTok广告', head:'Kevin Zhu（VP）', desc:'商业化广告' },
+          { name:'TikTok Music', head:'Tomasz Staszkiewicz（VP）', desc:'音乐流媒体' },
+          { name:'TikTok安全', head:'Roland Cloutier（CISO）', desc:'数据安全与合规' },
+          { name:'TikTok电商', head:'Kyle Ong（VP）', desc:'东南亚电商' }
+        ]
+      },
+      {
+        abbr:'今日头条', name:'今日头条事业群', icon:'📰', color:'#F59E0B', share:'约8%', head:'张超（VP）',
+        desc:'国内领先信息流资讯平台，以AI推荐引擎为核心。',
+        subs:[
+          { name:'今日头条App', head:'产品负责人', desc:'核心资讯产品' },
+          { name:'西瓜视频', head:'业务负责人', desc:'中长视频平台' },
+          { name:'皮皮虾', head:'产品负责人', desc:'搞笑内容社区' },
+          { name:'头条搜索', head:'技术负责人', desc:'搜索业务' }
+        ]
+      },
+      {
+        abbr:'飞书', name:'飞书（企业协作）', icon:'✈️', color:'#6366F1', share:'约3%', head:'谢欣（VP）',
+        desc:'企业协作平台，整合IM、文档、日历、OKR等功能。',
+        subs:[
+          { name:'飞书文档', head:'张楠（总监）', desc:'在线文档' },
+          { name:'飞书OKR', head:'李明（总监）', desc:'目标管理' },
+          { name:'飞书会议', head:'王伟（总监）', desc:'视频会议' },
+          { name:'飞书审批', head:'刘强（总监）', desc:'流程管理' },
+          { name:'飞书People', head:'陈静（总监）', desc:'人事管理' }
+        ]
+      },
+      {
+        abbr:'豆包AI', name:'豆包大模型（AI业务）', icon:'🤖', color:'#8B5CF6', share:'战略投入', head:'朱文佳（技术VP）',
+        desc:'字节跳动AI战略核心，涵盖通用大模型、文生图、文生视频等多模态能力。',
+        subs:[
+          { name:'豆包通用大模型', head:'模型负责人', desc:'自研基座模型' },
+          { name:'豆包API服务', head:'商业化团队', desc:'企业级API' },
+          { name:'即梦AI', head:'产品负责人', desc:'文生图/视频' },
+          { name:'剪映AI剪辑', head:'产品团队', desc:'AI视频工具' },
+          { name:'火山引擎', head:'云服务团队', desc:'云服务+AI' },
+          { name:'Coze AI开发平台', head:'产品负责人', desc:'AI应用开发' }
+        ]
+      },
+      {
+        abbr:'番茄', name:'番茄小说事业群', icon:'📚', color:'#EF4444', share:'约5%', head:'王超（VP）',
+        desc:'免费网文平台，DAU超3000万。',
+        subs:[
+          { name:'番茄小说App', head:'产品负责人', desc:'核心阅读产品' },
+          { name:'番茄畅听', head:'业务负责人', desc:'有声阅读' },
+          { name:'短剧业务', head:'内容负责人', desc:'短剧制作' }
+        ]
+      },
+    ]
+  },
+  tencent: {
+    intro: '腾讯采用事业群（BG）制组织架构，2018年完成重大战略调整，新增云与智慧产业事业群（CSIG）及平台与内容事业群（PCG），形成以To-C消费互联网和To-B产业互联网双轮驱动的格局。核心管理层包括董事会主席马化腾、总裁刘炽平、CFO范致远。',
+    biz: [
+      { abbr:'WXG', name:'微信事业群', icon:'💬', color:'#07C160', share:'约35%', head:'张小龙（微信之父）', desc:'负责微信/WeChat全球产品研发与运营，涵盖微信主APP、小程序、微信支付底层能力、公众号/视频号生态等。微信生态是腾讯最核心的流量底盘。', subs:['微信/WeChat','视频号','小程序','微信支付','公众号','企业微信','微信搜一搜','微信开放平台'] },
+      { abbr:'IEG', name:'互动娱乐事业群', icon:'🎮', color:'#7B61FF', share:'约25%', head:'任宇昕（COO）', desc:'腾讯游戏全球业务核心，负责国内外游戏研发、发行、运营。通过天美、光子等工作室群打造现象级产品，投资Riot、Supercell、Epic等全球顶级游戏公司。', subs:['王者荣耀','和平精英','英雄联盟（Riot）','Supercell','天美工作室群','光子工作室群','魔方工作室','北极光工作室'] },
+      { abbr:'CSIG', name:'云与智慧产业事业群', icon:'☁️', color:'#006EFF', share:'约15%', head:'汤道生', desc:'面向B端和G端的云计算、大数据、AI、安全等技术服务，涵盖腾讯云、腾讯会议、腾讯文档等SaaS产品，是腾讯To-B战略的核心载体。', subs:['腾讯云','腾讯会议','腾讯文档','腾讯地图','腾讯安全','腾讯AI Lab','行业解决方案','智慧产业'] },
+      { abbr:'PCG', name:'平台与内容事业群', icon:'📺', color:'#FF6B00', share:'约15%', head:'任宇昕（兼）', desc:'负责腾讯旗下新闻、视频、体育、音乐等内容平台，以及QQ、浏览器等流量平台的运营与商业化。', subs:['腾讯视频','腾讯新闻','QQ','QQ浏览器','腾讯体育','应用宝','腾讯看点','微视'] },
+      { abbr:'CDG', name:'企业发展事业群', icon:'💼', color:'#64748b', share:'中台支撑', head:'林璟骅', desc:'负责腾讯战略投资、并购、企业发展及对外关系。管理腾讯数百项战略投资。', subs:['战略投资','并购整合','投资者关系','企业发展','公关品牌'] },
+      { abbr:'TEG', name:'技术工程事业群', icon:'⚙️', color:'#475569', share:'技术中台', head:'卢山（VP）', desc:'腾讯技术中台，负责底层基础设施建设、数据中心、网络、安全、研发效能等。', subs:['基础架构','数据中心','网络安全','研发效能','开源协同'] },
+    ]
+  },
+  baba: {
+    intro: '2023年阿里巴巴启动"1+6+N"史上最大组织变革，将集团拆分为六大业务集团+多个业务公司，各自独立运营、独立融资甚至独立上市，开启"去中心化"时代。',
+    biz: [
+      { abbr:'淘天', name:'淘天集团', icon:'🛍️', color:'#F97316', share:'约40%', head:'吴泳铭（CEO兼管）', desc:'阿里最核心资产，旗下淘宝、天猫、1688、阿里妈妈（广告）、闲鱼等，承载绝大部分中国零售商业收入。', subs:['淘宝','天猫','1688','阿里妈妈','闲鱼','淘特','淘宝直播'] },
+      { abbr:'阿里云', name:'阿里云智能集团', icon:'☁️', color:'#007AFF', share:'约10%', head:'吴泳铭（CEO兼管）', desc:'中国最大云计算服务商，旗下阿里云公共云、混合云、AI大模型（通义千问）等，积极推进AI原生战略。', subs:['阿里云公共云','通义千问（大模型）','钉钉','阿里云OS','飞天OS','平头哥芯片','神龙服务器'] },
+      { abbr:'AIDC', name:'国际数字商业集团', icon:'🌐', color:'#8B5CF6', share:'约8%', head:'蒋凡', desc:'阿里海外电商业务集群，旗下速卖通（全球）、Lazada（东南亚）、Miravia（西班牙）、Trendyol（土耳其），是阿里国际化的主战场。', subs:['速卖通（AliExpress）','Lazada','Trendyol','Miravia','Daraz'] },
+      { abbr:'本地生活', name:'本地生活集团', icon:'🍜', color:'#EF4444', share:'约5%', head:'俞永福', desc:'旗下饿了么（外卖）、高德地图（出行导航）、口碑（到店）等，持续深耕本地服务场景。', subs:['饿了么','高德地图','口碑','阿里到家','蜂鸟配送'] },
+      { abbr:'菜鸟', name:'菜鸟集团', icon:'📦', color:'#F59E0B', share:'约7%', head:'万霖', desc:'阿里物流基础设施与供应链网络，旗下菜鸟裹裹、菜鸟驿站、跨境物流等，已启动独立上市进程。', subs:['菜鸟裹裹','菜鸟驿站','跨境物流','菜鸟供应链','仓储网络'] },
+      { abbr:'大文娱', name:'大文娱集团', icon:'🎬', color:'#EC4899', share:'约3%', head:'樊路远', desc:'旗下优酷（长视频）、阿里影业、大麦网（演出票务）等泛娱乐业务。', subs:['优酷','阿里影业','大麦网','灵犀互娱'] },
+    ]
+  },
+  ks: {
+    intro: '快手以"主站+出海+商业化"为核心业务架构，组织上围绕内容生态、电商、广告三条主线展开，采用产品线+职能线双轨制管理。',
+    biz: [
+      { abbr:'主站', name:'快手主站（中国业务）', icon:'📱', color:'#FF4500', share:'约75%', head:'程一笑（CEO兼管）', desc:'快手App核心产品与运营，涵盖短视频内容生态、直播、电商（快手小店）、广告商业化等，是快手营收的绝对主体。', subs:['快手短视频','快手直播','快手小店','磁力引擎','快手云','快手创作中心'] },
+      { abbr:'Kwai', name:'海外事业部（Kwai）', icon:'🌍', color:'#F59E0B', share:'约10%', head:'仇广宇', desc:'快手在海外市场的产品Kwai，主要布局拉美（巴西、墨西哥）及东南亚。', subs:['Kwai巴西/墨西哥','Kwai东南亚','海外直播','海外广告'] },
+      { abbr:'电商BU', name:'快手电商业务单元', icon:'🛒', color:'#10b981', share:'GMV贡献', head:'王剑伟（VP）', desc:'快手电商整体战略与运营，通过"内容+货架"双场景驱动GMV增长。', subs:['品牌自播','达人带货','快手小店','泛货架商城','商家运营'] },
+      { abbr:'商业化BU', name:'商业化事业部', icon:'💰', color:'#6366F1', share:'利润核心', head:'王剑伟（兼）', desc:'快手广告产品与技术，广告收入是快手最赚钱的业务。', subs:['磁力引擎','DMP数据平台','品牌广告','效果广告'] },
+    ]
+  },
+  bidu: {
+    intro: '百度历经多次架构调整，目前形成以移动生态（MEG）、人工智能云（ACG）、自动驾驶（IDG）为三大主轴的事业群架构，AI First战略贯穿各业务线。',
+    biz: [
+      { abbr:'MEG', name:'移动生态事业群', icon:'🔍', color:'#2932e1', share:'约55%', head:'何俊杰（VP）', desc:'百度核心搜索与信息流业务，旗下百度App、百度搜索、百度信息流、度小满金融等，是百度广告收入的主要来源。', subs:['百度App','百度搜索','百度信息流','好看视频','百度贴吧','度小满金融','百家号'] },
+      { abbr:'ACG', name:'AI云事业群', icon:'☁️', color:'#4A90E2', share:'约25%', head:'沈抖（VP）', desc:'百度智能云、AI大模型B端服务，文心一言（ERNIE）大模型的企业级API服务是当前增长最快的业务。', subs:['百度智能云','文心一言','百度地图','飞桨深度学习平台','千帆大模型平台'] },
+      { abbr:'IDG', name:'智能驾驶事业群', icon:'🚗', color:'#10b981', share:'战略投入', head:'王云鹏（VP）', desc:'百度自动驾驶全栈技术研发与商业化，包括萝卜快跑（Robotaxi）无人驾驶出行服务、Apollo开放平台。', subs:['萝卜快跑','Apollo开放平台','智能交通ACE','车路云一体化'] },
+    ]
+  },
+  nvda: {
+    intro: 'NVIDIA以GPU芯片为核心，围绕"Data Center + Auto + Gaming"构建业务，数据中心AI加速已成为绝对主轴，软件生态（CUDA）构建极深的护城河。',
+    biz: [
+      { abbr:'DC', name:'Data Center（数据中心）', icon:'🖥️', color:'#76B900', share:'约80%', head:'Ian Buck（VP）', desc:'AI训练与推理GPU（H100/H200/B100 Blackwell系列）、DGX超级计算机、NVLink互联网络，全球最大AI基础设施供应商。', subs:['H100/H200 GPU','Blackwell B100','DGX SuperPOD','NVLink','Spectrum-X网络','NVIDIA AI Enterprise'] },
+      { abbr:'Auto', name:'Automotive（汽车）', icon:'🚗', color:'#3B82F6', share:'约2%', head:'Ali Kani（VP）', desc:'车载AI芯片（DRIVE Orin/Thor）、自动驾驶软件栈。', subs:['DRIVE Orin','DRIVE Thor','DRIVE OS','自动驾驶仿真平台'] },
+      { abbr:'Gaming', name:'Gaming（游戏）', icon:'🎮', color:'#FFD700', share:'约10%', head:'Matt Wuebbling（VP）', desc:'GeForce RTX系列消费级显卡，DLSS/RTX技术引领PC游戏体验。', subs:['GeForce RTX 40/50','DLSS超分辨率','RTX光追','GeForce NOW'] },
+      { abbr:'Platform', name:'Software & Services', icon:'💻', color:'#9333EA', share:'战略资产', head:'Manuvir Das（VP）', desc:'CUDA深度学习平台、NIM微服务，软件生态是NVIDIA最深的护城河。', subs:['CUDA','NVIDIA NIM','TensorRT','RAPIDS','NVIDIA AI Enterprise'] },
+    ]
+  },
+  amzn: {
+    intro: 'Amazon业务横跨电商、云计算、广告、物流等多个领域，AWS是全球最大云服务商，Prime会员体系构建强大的用户粘性飞轮。',
+    biz: [
+      { abbr:'AWS', name:'Amazon Web Services', icon:'☁️', color:'#FF9900', share:'约17%', head:'Matt Garman', desc:'全球最大云计算平台，AI基础设施（Trainium/Inferentia芯片、Bedrock平台）是当前最大增量。', subs:['EC2/S3/RDS','Amazon Bedrock','Trainium/Inferentia','SageMaker','Amazon Q'] },
+      { abbr:'NA Retail', name:'北美零售与广告', icon:'🛒', color:'#111111', share:'约60%', head:'Doug Herrington', desc:'北美自营电商+第三方卖家平台，广告业务是北美业务最重要的利润来源。', subs:['Amazon.com','第三方卖家平台','Amazon Advertising','Prime会员','Amazon Fresh'] },
+      { abbr:'Intl', name:'国际电商', icon:'🌐', color:'#4A90E2', share:'约22%', head:'Kelly Greer', desc:'覆盖欧洲、日本、印度等主要市场。', subs:['欧洲Amazon','Amazon日本','Amazon印度','跨境电商'] },
+    ]
+  },
+  meta: {
+    intro: 'Meta经历Facebook更名后，形成"Family of Apps + Reality Labs"双轨架构，AI优先战略全面渗透各产品线。',
+    biz: [
+      { abbr:'FoA', name:'Family of Apps', icon:'📱', color:'#1877F2', share:'约97%', head:'Mark Zuckerberg（CEO兼）', desc:'Meta核心应用组合，涵盖Facebook、Instagram、WhatsApp、Messenger、Threads，广告收入是绝对主体。', subs:['Facebook','Instagram','WhatsApp','Messenger','Threads','Meta AI助手'] },
+      { abbr:'RL', name:'Reality Labs', icon:'🥽', color:'#8B5CF6', share:'约3%', head:'Andrew Bosworth（CTO）', desc:'元宇宙与AR/VR硬件研发，Quest VR头显、Ray-Ban Meta智能眼镜持续探索。', subs:['Meta Quest','Ray-Ban Meta智能眼镜','Horizon Worlds','AR/VR研发'] },
+    ]
+  },
+  aapl: {
+    intro: 'Apple以产品线为核心组织业务，iPhone依然是绝对支柱，服务业务是增长最快的第二曲线。',
+    biz: [
+      { abbr:'iPhone', name:'iPhone', icon:'📱', color:'#1D1D1F', share:'约52%', head:'Johny Srouji（硬件工程VP）', desc:'全球最畅销智能手机，A系列芯片引领移动端性能，Apple Intelligence落地。', subs:['iPhone 16系列','iPhone 16 Pro','Apple Intelligence','A18/A18 Pro芯片'] },
+      { abbr:'Services', name:'Services（服务）', icon:'🌐', color:'#007AFF', share:'约22%', head:'Eddy Cue', desc:'苹果利润率最高的业务，包含App Store、Apple Music、Apple TV+、iCloud等，毛利率约70%。', subs:['App Store','Apple Music','Apple TV+','iCloud','Apple Pay','Apple One'] },
+      { abbr:'Mac', name:'Mac', icon:'💻', color:'#666666', share:'约8%', head:'John Ternus（硬件工程VP）', desc:'搭载Apple Silicon（M系列芯片）的Mac产品线。', subs:['MacBook Air','MacBook Pro','iMac','Mac mini','Mac Studio'] },
+      { abbr:'iPad', name:'iPad', icon:'📋', color:'#4A90E2', share:'约6%', head:'Tom Boger（VP）', desc:'平板市场绝对领导者。', subs:['iPad Pro','iPad Air','iPad mini','Apple Pencil'] },
+      { abbr:'Wearables', name:'Wearables & Home', icon:'⌚', color:'#EF4444', share:'约10%', head:'Jeff Williams（COO）', desc:['Apple Watch','AirPods','HomePod','Vision Pro'] },
+    ]
+  },
+};
+
+init();
+</script>
+</body>
+</html>
