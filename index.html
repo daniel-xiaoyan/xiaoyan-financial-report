@@ -962,6 +962,7 @@ function closeHeatmapAndOpen(id) {
 }
 
 
+function openDetail(c) {
   curCompany = c;
   curModalTab = 0;
   document.getElementById('mLogo').style.background = c.color;
@@ -1397,7 +1398,7 @@ const ORG_DATA = {
       { abbr:'Services', name:'Services（服务）', icon:'🌐', color:'#007AFF', share:'约22%', head:'Eddy Cue', desc:'苹果利润率最高的业务，包含App Store、Apple Music、Apple TV+、iCloud等，毛利率约70%。', subs:['App Store','Apple Music','Apple TV+','iCloud','Apple Pay','Apple One'] },
       { abbr:'Mac', name:'Mac', icon:'💻', color:'#666666', share:'约8%', head:'John Ternus（硬件工程VP）', desc:'搭载Apple Silicon（M系列芯片）的Mac产品线。', subs:['MacBook Air','MacBook Pro','iMac','Mac mini','Mac Studio'] },
       { abbr:'iPad', name:'iPad', icon:'📋', color:'#4A90E2', share:'约6%', head:'Tom Boger（VP）', desc:'平板市场绝对领导者。', subs:['iPad Pro','iPad Air','iPad mini','Apple Pencil'] },
-      { abbr:'Wearables', name:'Wearables & Home', icon:'⌚', color:'#EF4444', share:'约10%', head:'Jeff Williams（COO）', desc:['Apple Watch','AirPods','HomePod','Vision Pro'] },
+      { abbr:'Wearables', name:'Wearables & Home', icon:'⌚', color:'#EF4444', share:'约10%', head:'Jeff Williams（COO）', desc:'可穿戴与智能家居业务，包括Apple Watch系列、AirPods、HomePod、Apple Vision Pro。', subs:['Apple Watch Series 10','Apple Watch Ultra','AirPods Pro','AirPods Max','HomePod mini','Apple Vision Pro'] },
     ]
   },
 };
