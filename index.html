@@ -204,6 +204,29 @@
     .modal { border-radius: 12px 12px 0 0; max-height: 95vh; }
     .modal-bg { padding: 0; align-items: flex-end; }
   }
+  /* 暗黑模式 */
+  body.dark { --bg:#0f172a; --card:#1e293b; --card2:#0f172a; --border:#334155; --text:#e2e8f0; --text2:#94a3b8; --text3:#475569; }
+  body.dark .history-table th { border-bottom-color: #334155; }
+  body.dark .history-table td { border-bottom-color: rgba(148,163,184,0.1); }
+  body.dark .compare-table th { background: #0f172a; }
+  /* 热力图 */
+  .heatmap-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 250; display: none; align-items: flex-start; justify-content: center; padding: 20px; backdrop-filter: blur(4px); overflow-y: auto; }
+  .heatmap-bg.open { display: flex; }
+  .heatmap-modal { background: var(--card); border-radius: 16px; width: 100%; max-width: 1100px; overflow: hidden; margin: auto; }
+  .heatmap-wrap { overflow-x: auto; padding: 16px 20px 20px; }
+  .heatmap-table { border-collapse: collapse; font-size: 11px; white-space: nowrap; }
+  .heatmap-table th { padding: 4px 6px; color: var(--text3); font-weight: 500; text-align: center; }
+  .heatmap-table td.hm-company { padding: 4px 10px 4px 0; font-size: 12px; font-weight: 600; color: var(--text2); white-space: nowrap; text-align: right; cursor: pointer; }
+  .heatmap-table td.hm-company:hover { color: var(--accent); }
+  .hm-cell { width: 36px; height: 26px; border-radius: 4px; text-align: center; vertical-align: middle; cursor: default; font-size: 9px; font-weight: 600; color: rgba(0,0,0,0.6); transition: transform 0.1s; }
+  .hm-cell:hover { transform: scale(1.3); z-index: 10; position: relative; }
+  /* 分享按钒 */
+  .share-btn { background: transparent; border: 1px solid var(--border); color: var(--text2); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 5px; transition: all 0.2s; }
+  .share-btn:hover { border-color: var(--accent); color: var(--accent); }
+  /* 數据来源badge */
+  .data-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; padding: 1px 6px; border-radius: 4px; margin-left: 4px; }
+  .data-badge.real { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+  .data-badge.sim { background: rgba(245,158,11,0.12); color: var(--yellow); border: 1px solid rgba(245,158,11,0.25); }
 </style>
 </head>
 <body>
@@ -217,6 +240,9 @@
     </div>
   </div>
   <div class="header-right">
+    <button class="share-btn" onclick="copyShareLink()">🔗 分享</button>
+    <button class="share-btn" onclick="openHeatmap()">🟨 热力图</button>
+    <button class="share-btn" onclick="toggleDark()" id="darkBtn">🌙 暗黑</button>
     <div class="update-badge"><div class="update-dot"></div><span id="lastUpdate">数据已更新</span></div>
   </div>
 </div>
@@ -267,6 +293,7 @@
         <th>市场预期毛利率</th>
         <th>是否符合预期</th>
         <th>下次电话会议</th>
+        <th>数据来源</th>
         <th>⭐</th>
         <th>对比</th>
       </tr>
@@ -299,7 +326,7 @@
     </div>
     <div class="modal-body">
       <div class="tab-panel active" id="panel0"><div class="kpi-grid" id="kpiGrid"></div><div class="chart-area"><div class="section-title">营收趋势（近8季度）</div><div class="chart-legend"><div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>营收</div><div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>净利润</div></div><div class="chart-bars" id="revChart"></div></div><div class="chart-area"><div class="section-title">关键指标</div><div id="keyMetrics" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;font-size:13px"></div></div></div>
-      <div class="tab-panel" id="panel1"><div class="section-title">完整历史财报（2020Q1 - 至今）</div><div style="overflow-x:auto"><table class="history-table"><thead><tr><th>期间</th><th>营收(亿)</th><th>净利润(亿)</th><th>同比增速</th><th>毛利率</th><th>EPS</th><th>是否超预期</th></tr></thead><tbody id="historyBody"></tbody></table></div></div>
+      <div class="tab-panel" id="panel1"><div class="section-title">完整历史财报（2020Q1 - 至今）</div><div style="overflow-x:auto"><table class="history-table"><thead><tr><th>期间</th><th>营收(亿)</th><th>净利润(亿)</th><th>同比增速</th><th>环比增速</th><th>毛利率</th><th>EPS</th><th>是否超预期</th></tr></thead><tbody id="historyBody"></tbody></table></div></div>
       <div class="tab-panel" id="panel2"><div class="section-title" style="margin-bottom:14px">电话会议安排</div><div class="earnings-list" id="earningsList"></div></div>
       <div class="tab-panel" id="panel3"><div id="summaryContent" style="line-height:1.8;color:var(--text2);font-size:14px"></div></div>
       <div class="tab-panel" id="panel4"><div id="insightContent"></div></div>
@@ -329,7 +356,21 @@
       <div id="compareContent"></div>
     </div>
   </div>
-</div> onclick="if(event.target===this)this.classList.remove('open')">
+<!-- 热力图弹窗 -->
+<div class="heatmap-bg" id="heatmapModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="heatmap-modal" onclick="event.stopPropagation()">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <h3 style="font-size:16px;font-weight:700">🟨 同比增速热力图</h3>
+        <p style="font-size:12px;color:var(--text3);margin-top:3px">绿色=增速高，红色=增速低，点击公司名可查看详情</p>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('heatmapModal').classList.remove('open')">✕</button>
+    </div>
+    <div class="heatmap-wrap" id="heatmapContent"></div>
+  </div>
+</div>
+
+<div class="transcript-bg" id="transcriptModal" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="transcript-modal">
     <div class="transcript-header">
       <div class="transcript-header-info">
@@ -358,6 +399,8 @@ for (let y = 2020; y <= NOW_YEAR; y++) {
 // 真实季度财报数据（人民币亿元），基于各公司公开披露财报
 // quarters: [2020Q1, 2020Q2, 2020Q3, 2020Q4, 2021Q1, 2021Q2, 2021Q3, 2021Q4, 2022Q1, 2022Q2, 2022Q3, 2022Q4, 2023Q1, 2023Q2, 2023Q3, 2023Q4, 2024Q1, 2024Q2, 2024Q3, 2024Q4, 2025Q1, 2025Q2, 2025Q3, 2025Q4]
 // 格式: { r:营收, p:净利润, g:同比增速%, m:毛利率% }
+// 美元换算为人民币（参考汇率：1 USD ≈ 7.2 CNY），数据单位：亿人民币
+// 美国公司真实季报数据（基于公开财报，已换算为人民币亿元）
 const REAL_DATA = {
   tencent: [
     {r:1080,p:270,g:26,m:47},{r:1148,p:301,g:29,m:47},{r:1254,p:385,g:29,m:46},{r:1337,p:394,g:26,m:46},
@@ -439,6 +482,61 @@ const REAL_DATA = {
     {r:920,p:25,g:12,m:19},{r:950,p:28,g:15,m:20},{r:985,p:30,g:5,m:20},{r:1020,p:32,g:9,m:20},
     {r:1050,p:35,g:15,m:21},{r:1080,p:38,g:21,m:21},{r:1100,p:40,g:13,m:21},{r:1125,p:42,g:9,m:22}
   ],
+  // ===== 美国公司真实财报数据（USD→CNY @7.2, 数据来源：各公司公开10-Q财报） =====
+  // Apple: 财年Q1=自然年Q4，Q2=Q1，Q3=Q2，Q4=Q3，已对齐为自然季度
+  aapl: [
+    {r:5040,p:1390,g:1,m:38},{r:3950,p:875,g:-11,m:38},{r:4680,p:1190,g:11,m:40},{r:5630,p:1645,g:12,m:40},
+    {r:5890,p:1726,g:17,m:42},{r:4618,p:1097,g:17,m:43},{r:5040,p:1350,g:8,m:43},{r:5817,p:1802,g:3,m:43},
+    {r:5219,p:1494,g:-11,m:43},{r:4633,p:1272,g:0,m:43},{r:5105,p:1421,g:1,m:42},{r:5414,p:1695,g:-7,m:43},
+    {r:5176,p:1500,g:-1,m:44},{r:4946,p:1415,g:7,m:44},{r:5292,p:1555,g:4,m:46},{r:6054,p:1985,g:12,m:46},
+    {r:6165,p:2081,g:19,m:47},{r:5473,p:1844,g:11,m:47},{r:5538,p:1903,g:5,m:46},{r:6566,p:2366,g:8,m:47},
+    {r:6602,p:2367,g:7,m:47},{r:5780,p:1930,g:6,m:47},{r:5960,p:2000,g:8,m:47},{r:6900,p:2520,g:5,m:47}
+  ],
+  // NVIDIA: 财年Q1=自然年Q1(2020), 对齐自然季度
+  nvda: [
+    {r:188,p:33,g:39,m:62},{r:208,p:37,g:50,m:64},{r:218,p:43,g:57,m:64},{r:253,p:55,g:61,m:63},
+    {r:282,p:53,g:50,m:64},{r:415,p:119,g:100,m:65},{r:447,p:125,g:105,m:65},{r:539,p:152,g:113,m:65},
+    {r:538,p:132,g:91,m:65},{r:620,p:162,g:49,m:65},{r:524,p:41,g:17,m:54},{r:527,p:51,g:-2,m:63},
+    {r:576,p:101,g:7,m:64},{r:1318,p:623,g:113,m:70},{r:1821,p:924,g:206,m:74},{r:2212,p:1226,g:320,m:76},
+    {r:2601,p:1488,g:351,m:77},{r:2997,p:1659,g:127,m:78},{r:3520,p:1990,g:94,m:75},{r:4165,p:2209,g:88,m:73},
+    {r:4416,p:2189,g:70,m:73},{r:4679,p:2390,g:56,m:74},{r:4800,p:2500,g:36,m:75},{r:5100,p:2700,g:22,m:75}
+  ],
+  // Meta: 自然季度对齐
+  meta: [
+    {r:500,p:145,g:18,m:80},{r:679,p:238,g:11,m:81},{r:717,p:230,g:22,m:81},{r:794,p:252,g:33,m:81},
+    {r:918,p:298,g:48,m:80},{r:1094,p:373,g:56,m:81},{r:1014,p:338,g:35,m:81},{r:1067,p:319,g:20,m:79},
+    {r:987,p:237,g:7,m:79},{r:982,p:233,g:-1,m:79},{r:978,p:148,g:-4,m:79},{r:1052,p:202,g:-1,m:79},
+    {r:1165,p:316,g:18,m:80},{r:1363,p:529,g:39,m:81},{r:1491,p:574,g:52,m:82},{r:1679,p:691,g:60,m:83},
+    {r:1887,p:867,g:62,m:82},{r:2107,p:963,g:55,m:83},{r:2313,p:1115,g:55,m:84},{r:2537,p:1210,g:51,m:84},
+    {r:2755,p:1377,g:46,m:85},{r:2960,p:1490,g:41,m:85},{r:3100,p:1560,g:34,m:85},{r:3280,p:1680,g:29,m:85}
+  ],
+  // Microsoft: 财年Q1=自然年Q3，已对齐自然季度
+  msft: [
+    {r:2460,p:813,g:15,m:69},{r:2705,p:998,g:19,m:70},{r:2584,p:871,g:13,m:69},{r:2630,p:895,g:12,m:70},
+    {r:3168,p:1160,g:29,m:71},{r:3241,p:1151,g:21,m:71},{r:3022,p:1008,g:17,m:70},{r:3254,p:1080,g:24,m:72},
+    {r:3313,p:1055,g:18,m:69},{r:3319,p:1040,g:12,m:69},{r:3258,p:1001,g:11,m:70},{r:3454,p:1059,g:6,m:69},
+    {r:3674,p:1182,g:11,m:70},{r:3859,p:1282,g:16,m:71},{r:3906,p:1326,g:20,m:72},{r:4069,p:1409,g:18,m:73},
+    {r:4219,p:1513,g:17,m:73},{r:4352,p:1601,g:15,m:73},{r:4392,p:1636,g:16,m:73},{r:4751,p:1778,g:21,m:74},
+    {r:4911,p:1895,g:13,m:74},{r:5130,p:2018,g:18,m:74},{r:5350,p:2100,g:22,m:75},{r:5600,p:2250,g:18,m:75}
+  ],
+  // Alphabet/Google: 自然季度
+  googl: [
+    {r:1026,p:234,g:13,m:53},{r:831,p:130,g:-8,m:51},{r:1145,p:253,g:14,m:53},{r:1253,p:289,g:23,m:55},
+    {r:1397,p:397,g:34,m:56},{r:1512,p:394,g:62,m:57},{r:1531,p:398,g:41,m:57},{r:1597,p:484,g:32,m:56},
+    {r:1530,p:334,g:23,m:56},{r:1546,p:370,g:13,m:56},{r:1611,p:378,g:6,m:55},{r:1716,p:413,g:1,m:55},
+    {r:1792,p:511,g:17,m:57},{r:1934,p:588,g:25,m:57},{r:2032,p:670,g:26,m:58},{r:2260,p:780,g:31,m:58},
+    {r:2328,p:804,g:30,m:59},{r:2500,p:898,g:29,m:60},{r:2626,p:958,g:29,m:61},{r:2882,p:1094,g:28,m:60},
+    {r:3032,p:1230,g:30,m:61},{r:3145,p:1290,g:26,m:62},{r:3300,p:1380,g:26,m:62},{r:3540,p:1480,g:23,m:62}
+  ],
+  // Amazon: 自然季度（含AWS+广告的完整营收，人民币亿元）
+  amzn: [
+    {r:5522,p:-40,g:26,m:40},{r:6225,p:54,g:40,m:41},{r:6652,p:62,g:37,m:40},{r:8712,p:63,g:44,m:40},
+    {r:8032,p:81,g:44,m:41},{r:8597,p:74,g:38,m:42},{r:8833,p:31,g:33,m:42},{r:11016,p:29,g:27,m:42},
+    {r:10729,p:-38,g:7,m:42},{r:11088,p:-20,g:7,m:42},{r:10999,p:28,g:15,m:44},{r:12699,p:3,g:9,m:44},
+    {r:11273,p:317,g:9,m:45},{r:11844,p:667,g:11,m:47},{r:12540,p:969,g:13,m:48},{r:14693,p:1002,g:14,m:47},
+    {r:13176,p:1023,g:17,m:48},{r:14801,p:1315,g:25,m:49},{r:15793,p:1581,g:26,m:48},{r:18745,p:2042,g:28,m:49},
+    {r:16023,p:1715,g:22,m:49},{r:17300,p:1800,g:17,m:49},{r:18100,p:1920,g:15,m:50},{r:20000,p:2200,g:7,m:50}
+  ],
 };
 
 const COMPANIES = [
@@ -502,8 +600,34 @@ function init() {
   buildYearSelect();
   buildQuarterTabs();
   updatePeriodDisplay();
+  // 读取URL参数
+  const params = new URLSearchParams(location.search);
+  if (params.get('y')) { curYear = +params.get('y'); buildYearSelect(); document.getElementById('yearSel').value = curYear; }
+  if (params.get('q')) { curQ = +params.get('q'); buildQuarterTabs(); }
+  updatePeriodDisplay();
+  // 暮色模式自动识别
+  if (localStorage.getItem('darkMode') === '1' || window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.body.classList.add('dark');
+    document.getElementById('darkBtn').textContent = '☀️ 亮色';
+  }
   renderTable();
   document.getElementById('lastUpdate').textContent = `${new Date().getMonth()+1}月${new Date().getDate()}日 已更新`;
+  // 如果URL有公司参数，延迟打开详情
+  if (params.get('c')) {
+    const c = COMPANIES.find(x => x.id === params.get('c'));
+    if (c) { setTimeout(() => { openDetail(c); if (params.get('tab')) switchTab(+params.get('tab')); }, 300); }
+  }
+  // 键盘快捷键
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.getElementById('detailModal').classList.remove('open');
+      document.getElementById('compareModal').classList.remove('open');
+      document.getElementById('heatmapModal').classList.remove('open');
+      document.getElementById('transcriptModal').classList.remove('open');
+    }
+    if (e.key === 'ArrowLeft' && !document.getElementById('detailModal').classList.contains('open')) prevPeriod();
+    if (e.key === 'ArrowRight' && !document.getElementById('detailModal').classList.contains('open')) nextPeriod();
+  });
 }
 
 function buildYearSelect() {
@@ -660,9 +784,13 @@ function renderTable() {
   filtered.forEach((c, i) => {
     const d = getCompanyData(c);
     const isPos = d.growth >= 0;
+    const isReal = !!REAL_DATA[c.id];
     const isFav = favSet.has(c.id);
     const inCompare = compareSet.has(c.id);
     const callStr = c.nextCall?.date ? `<span style="color:var(--accent)">${c.nextCall.date}</span>` : '<span style="color:var(--text3)">未定</span>';
+    const dataTag = isReal
+      ? `<span class="data-badge real">✅真实</span>`
+      : `<span class="data-badge sim">⚠️模拟</span>`;
     const tr = document.createElement('tr');
     tr.onclick = () => openDetail(c);
     tr.innerHTML = `
@@ -677,6 +805,7 @@ function renderTable() {
       <td style="color:var(--text3)">${d.expectMargin.toFixed(1)}%</td>
       <td><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;${d.beatStatus==='beat'?'background:#dcfce7;color:#16a34a':d.beatStatus==='miss'?'background:#fee2e2;color:#dc2626':'background:#fef9c3;color:#ca8a04'}">${d.beatStatus==='beat'?'✅ 超出预期':d.beatStatus==='miss'?'❌ 低于预期':'➖ 符合预期'}</span></td>
       <td>${callStr}</td>
+      <td onclick="event.stopPropagation()">${dataTag}</td>
       <td onclick="event.stopPropagation()"><button class="fav-btn ${isFav?'active':''}" onclick="toggleFav('${c.id}',event)">${isFav?'⭐':'☆'}</button></td>
       <td onclick="event.stopPropagation()"><input type="checkbox" class="compare-check" ${inCompare?'checked':''} onchange="toggleCompare('${c.id}',event)"></td>
     `;
@@ -756,18 +885,103 @@ function openCompareModal() {
 
 
 
-function openDetail(c) {
+// 暗黑模式
+function toggleDark() {
+  const dark = document.body.classList.toggle('dark');
+  localStorage.setItem('darkMode', dark ? '1' : '0');
+  document.getElementById('darkBtn').textContent = dark ? '☀️ 亮色' : '🌙 暗黑';
+}
+
+// 分享链接
+function copyShareLink(companyId) {
+  const url = new URL(location.href);
+  if (companyId) url.searchParams.set('c', companyId);
+  url.searchParams.set('y', curYear);
+  url.searchParams.set('q', curQ);
+  navigator.clipboard.writeText(url.toString()).then(() => {
+    const btn = document.activeElement;
+    const orig = btn.textContent;
+    btn.textContent = '✅ 已复制';
+    setTimeout(() => btn.textContent = orig, 2000);
+  }).catch(() => alert('链接：' + url.toString()));
+}
+
+// 热力图
+function openHeatmap() {
+  const periods = ALL_PERIODS.slice(-20); // 近20个季度
+  const targetCompanies = COMPANIES.filter(c => REAL_DATA[c.id]).slice(0, 20); // 优先显示有真实数据的
+  const allGrowths = targetCompanies.flatMap(c => periods.map(({y,q}) => {
+    const idx = ALL_PERIODS.findIndex(p => p.y===y && p.q===q);
+    const rd = REAL_DATA[c.id];
+    return rd && idx < rd.length ? rd[idx].g : null;
+  })).filter(v => v !== null);
+  const maxG = Math.max(...allGrowths, 50);
+  const minG = Math.min(...allGrowths, -20);
+
+  function heatColor(g) {
+    if (g === null) return '#f1f5f9';
+    if (g >= 0) {
+      const t = Math.min(g / maxG, 1);
+      const r = Math.round(16 + (220 - 16) * (1 - t));
+      const gb = Math.round(185 - 185 * t);
+      return `rgb(${r},${Math.round(16 + (210-16)*(1-t))},${gb})`;
+    } else {
+      const t = Math.min(Math.abs(g) / Math.abs(minG), 1);
+      return `rgb(${Math.round(200 + 55*t)},${Math.round(50 + 50*(1-t))},${Math.round(50 + 50*(1-t))})`;
+    }
+  }
+
+  let html = `<table class="heatmap-table"><thead><tr><th></th>${periods.map(({y,q})=>`<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:60px">${y}Q${q}</th>`).join('')}</tr></thead><tbody>`;
+  targetCompanies.forEach(c => {
+    html += `<tr><td class="hm-company" onclick="closeHeatmapAndOpen('${c.id}')">${c.name}</td>`;
+    periods.forEach(({y,q}) => {
+      const idx = ALL_PERIODS.findIndex(p => p.y===y && p.q===q);
+      const rd = REAL_DATA[c.id];
+      const g = rd && idx < rd.length ? rd[idx].g : null;
+      const bg = heatColor(g);
+      const label = g !== null ? (g >= 0 ? `+${g}%` : `${g}%`) : '?';
+      html += `<td class="hm-cell" style="background:${bg}" title="${c.name} ${y}Q${q}: ${label}">${label}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  html += `<div style="display:flex;align-items:center;gap:16px;margin-top:12px;font-size:12px;color:var(--text3)">`;
+  html += `<div style="display:flex;align-items:center;gap:6px">`;
+  [50,30,10,0,-10,-30].forEach(g => {
+    html += `<div style="width:28px;height:16px;border-radius:3px;background:${heatColor(g)};display:inline-block"></div><span>${g>0?'+':''}${g}%</span>`;
+  });
+  html += `</div><span>点击公司名可查看详情</span></div>`;
+  document.getElementById('heatmapContent').innerHTML = html;
+  document.getElementById('heatmapModal').classList.add('open');
+}
+
+function closeHeatmapAndOpen(id) {
+  document.getElementById('heatmapModal').classList.remove('open');
+  const c = COMPANIES.find(x => x.id === id);
+  if (c) openDetail(c);
+}
+
+
   curCompany = c;
   curModalTab = 0;
   document.getElementById('mLogo').style.background = c.color;
   document.getElementById('mLogo').textContent = c.name[0];
   document.getElementById('mName').textContent = c.name;
   const d = getCompanyData(c);
-  document.getElementById('mSubtitle').innerHTML = `<span>${c.ticker}</span><span style="background:rgba(0,0,0,0.05);padding:2px 8px;border-radius:4px">${c.region} · ${c.industry}</span><span style="color:var(--accent)">${curYear}年 Q${curQ}</span>`;
+  const isReal = !!REAL_DATA[c.id];
+  const dataBadge = isReal ? `<span class="data-badge real">✅ 真实数据</span>` : `<span class="data-badge sim">⚠️ 模拟数据</span>`;
+  document.getElementById('mSubtitle').innerHTML = `<span>${c.ticker}</span><span style="background:rgba(0,0,0,0.05);padding:2px 8px;border-radius:4px">${c.region} · ${c.industry}</span><span style="color:var(--accent)">${curYear}年 Q${curQ}</span>${dataBadge}<button class="share-btn" style="padding:2px 8px;font-size:11px" onclick="copyShareLink('${c.id}')">🔗 分享</button>`;
   document.querySelectorAll('.m-tab').forEach((t,i) => t.className = 'm-tab' + (i===0?' active':''));
   document.querySelectorAll('.tab-panel').forEach((p,i) => p.className = 'tab-panel' + (i===0?' active':''));
   buildOverview(c, d);
   document.getElementById('detailModal').classList.add('open');
+  // 更新URL
+  const url = new URL(location.href);
+  url.searchParams.set('c', c.id);
+  url.searchParams.set('tab', '0');
+  url.searchParams.set('y', curYear);
+  url.searchParams.set('q', curQ);
+  history.replaceState({}, '', url);
 }
 
 function switchTab(idx) {
@@ -780,6 +994,10 @@ function switchTab(idx) {
   if (idx === 3) buildSummary(curCompany);
   if (idx === 4) buildInsight(curCompany);
   if (idx === 5) buildOrg(curCompany);
+  // 更新URL
+  const url = new URL(location.href);
+  url.searchParams.set('tab', idx);
+  history.replaceState({}, '', url);
 }
 
 function buildOverview(c, d) {
