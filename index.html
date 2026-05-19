@@ -51,6 +51,26 @@
   .quick-btn { background: transparent; border: 1px solid var(--border); color: var(--text2); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
   .quick-btn:hover { background: rgba(59,130,246,0.1); border-color: var(--accent); color: var(--accent); }
   .quick-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; box-shadow: 0 2px 8px rgba(59,130,246,0.3); }
+  .fav-btn { background: transparent; border: none; font-size: 16px; cursor: pointer; padding: 2px 4px; opacity: 0.4; transition: opacity 0.2s; }
+  .fav-btn.active { opacity: 1; }
+  .compare-check { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); }
+  .compare-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 12px 24px; display: none; align-items: center; gap: 12px; z-index: 150; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); }
+  .compare-bar.show { display: flex; }
+  .compare-chips { display: flex; gap: 8px; flex: 1; flex-wrap: wrap; }
+  .compare-chip { background: var(--card2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+  .compare-chip button { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 14px; line-height: 1; padding: 0; }
+  .compare-modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+  .compare-modal-bg.open { display: flex; }
+  .compare-modal { background: var(--card); border-radius: 16px; width: 100%; max-width: 960px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .compare-table th { padding: 10px 14px; background: var(--card2); border: 1px solid var(--border); text-align: center; font-weight: 600; color: var(--text2); }
+  .compare-table td { padding: 10px 14px; border: 1px solid var(--border); text-align: center; vertical-align: middle; }
+  .compare-table td:first-child { text-align: left; font-weight: 500; color: var(--text3); font-size: 12px; }
+  .compare-table .best { background: rgba(16,185,129,0.1); color: var(--green); font-weight: 700; }
+  .insight-card { background: linear-gradient(135deg, rgba(59,130,246,0.06), rgba(99,102,241,0.06)); border: 1px solid rgba(59,130,246,0.2); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  .insight-title { font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .insight-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 5px; }
+  .insight-item:last-child { margin-bottom: 0; }
   .count-info { margin-left: auto; color: var(--text2); font-size: 13px; }
   .table-wrap { padding: 0 24px 24px; overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; min-width: 900px; }
@@ -236,7 +256,7 @@
   <table id="mainTable">
     <thead>
       <tr>
-        <th onclick="sortBy('rank')"># <span>↕</span></th>
+        <th>#</th>
         <th onclick="sortBy('name')">公司 <span>↕</span></th>
         <th>地区</th>
         <th>行业</th>
@@ -247,6 +267,8 @@
         <th>市场预期毛利率</th>
         <th>是否符合预期</th>
         <th>下次电话会议</th>
+        <th>⭐</th>
+        <th>对比</th>
       </tr>
     </thead>
     <tbody id="tableBody"></tbody>
@@ -272,19 +294,42 @@
       <button class="m-tab" onclick="switchTab(1)">📅 历史财报</button>
       <button class="m-tab" onclick="switchTab(2)">🎙️ 电话会议</button>
       <button class="m-tab" onclick="switchTab(3)">📰 业绩摘要</button>
-      <button class="m-tab" onclick="switchTab(4)">🏢 组织架构</button>
+      <button class="m-tab" onclick="switchTab(4)">💡 AI洞察</button>
+      <button class="m-tab" onclick="switchTab(5)">🏢 组织架构</button>
     </div>
     <div class="modal-body">
       <div class="tab-panel active" id="panel0"><div class="kpi-grid" id="kpiGrid"></div><div class="chart-area"><div class="section-title">营收趋势（近8季度）</div><div class="chart-legend"><div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>营收</div><div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>净利润</div></div><div class="chart-bars" id="revChart"></div></div><div class="chart-area"><div class="section-title">关键指标</div><div id="keyMetrics" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;font-size:13px"></div></div></div>
       <div class="tab-panel" id="panel1"><div class="section-title">完整历史财报（2020Q1 - 至今）</div><div style="overflow-x:auto"><table class="history-table"><thead><tr><th>期间</th><th>营收(亿)</th><th>净利润(亿)</th><th>同比增速</th><th>毛利率</th><th>EPS</th><th>是否超预期</th></tr></thead><tbody id="historyBody"></tbody></table></div></div>
       <div class="tab-panel" id="panel2"><div class="section-title" style="margin-bottom:14px">电话会议安排</div><div class="earnings-list" id="earningsList"></div></div>
       <div class="tab-panel" id="panel3"><div id="summaryContent" style="line-height:1.8;color:var(--text2);font-size:14px"></div></div>
-      <div class="tab-panel" id="panel4"><div id="orgContent"></div></div>
+      <div class="tab-panel" id="panel4"><div id="insightContent"></div></div>
+      <div class="tab-panel" id="panel5"><div id="orgContent"></div></div>
     </div>
   </div>
 </div>
 
-<div class="transcript-bg" id="transcriptModal" onclick="if(event.target===this)this.classList.remove('open')">
+</div>
+
+<!-- 对比悬浮条 -->
+<div class="compare-bar" id="compareBar">
+  <strong style="font-size:13px;white-space:nowrap">📊 对比中：</strong>
+  <div class="compare-chips" id="compareChips"></div>
+  <button onclick="openCompareModal()" style="background:var(--accent);color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap">开始对比</button>
+  <button onclick="clearCompare()" style="background:transparent;border:1px solid var(--border);color:var(--text2);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;white-space:nowrap">清空</button>
+</div>
+
+<!-- 对比弹窗 -->
+<div class="compare-modal-bg" id="compareModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="compare-modal" onclick="event.stopPropagation()">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <h3 style="font-size:17px;font-weight:700">📊 公司多维对比</h3>
+      <button class="modal-close" onclick="document.getElementById('compareModal').classList.remove('open')">✕</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:20px 24px">
+      <div id="compareContent"></div>
+    </div>
+  </div>
+</div> onclick="if(event.target===this)this.classList.remove('open')">
   <div class="transcript-modal">
     <div class="transcript-header">
       <div class="transcript-header-info">
@@ -451,7 +496,7 @@ const COMPANIES = [
 ];
 
 let curYear = NOW_YEAR, curQ = NOW_Q;
-let searchVal = '', regionVal = '', sortKey = 'revenue', sortAsc = false;
+let searchVal = '', regionVal = '', sortKey = 'revenue', sortAsc = false, favOnly = false;
 
 function init() {
   buildYearSelect();
@@ -561,6 +606,7 @@ function sortedCompanies(list) {
 
 function filterCompanies() {
   return COMPANIES.filter(c => {
+    if (favOnly && !favSet.has(c.id)) return false;
     if (searchVal && !c.name.toLowerCase().includes(searchVal.toLowerCase()) && !c.ticker.toLowerCase().includes(searchVal.toLowerCase())) return false;
     if (regionVal && c.region !== regionVal) return false;
     return true;
@@ -570,15 +616,22 @@ function filterCompanies() {
 function quickFilter(val) {
   document.querySelectorAll('.quick-btn').forEach(btn => btn.classList.remove('active'));
   const btns = document.querySelectorAll('.quick-btn');
-  const btnMap = {'中国': 0, '美国': 1, 'top10': 2, '': 3};
+  const btnMap = {'中国': 0, '美国': 1, 'top10': 2, 'fav': 3, '': 4};
   if (btnMap[val] !== undefined) btns[btnMap[val]].classList.add('active');
   
   if (val === 'top10') {
-    regionVal = '';
+    regionVal = ''; favOnly = false;
     document.getElementById('regionSel').value = '';
     renderTable();
     return;
   }
+  if (val === 'fav') {
+    regionVal = ''; favOnly = true;
+    document.getElementById('regionSel').value = '';
+    renderTable();
+    return;
+  }
+  favOnly = false;
   regionVal = val;
   document.getElementById('regionSel').value = val;
   filterTable();
@@ -607,6 +660,8 @@ function renderTable() {
   filtered.forEach((c, i) => {
     const d = getCompanyData(c);
     const isPos = d.growth >= 0;
+    const isFav = favSet.has(c.id);
+    const inCompare = compareSet.has(c.id);
     const callStr = c.nextCall?.date ? `<span style="color:var(--accent)">${c.nextCall.date}</span>` : '<span style="color:var(--text3)">未定</span>';
     const tr = document.createElement('tr');
     tr.onclick = () => openDetail(c);
@@ -622,13 +677,84 @@ function renderTable() {
       <td style="color:var(--text3)">${d.expectMargin.toFixed(1)}%</td>
       <td><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;${d.beatStatus==='beat'?'background:#dcfce7;color:#16a34a':d.beatStatus==='miss'?'background:#fee2e2;color:#dc2626':'background:#fef9c3;color:#ca8a04'}">${d.beatStatus==='beat'?'✅ 超出预期':d.beatStatus==='miss'?'❌ 低于预期':'➖ 符合预期'}</span></td>
       <td>${callStr}</td>
+      <td onclick="event.stopPropagation()"><button class="fav-btn ${isFav?'active':''}" onclick="toggleFav('${c.id}',event)">${isFav?'⭐':'☆'}</button></td>
+      <td onclick="event.stopPropagation()"><input type="checkbox" class="compare-check" ${inCompare?'checked':''} onchange="toggleCompare('${c.id}',event)"></td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-let curCompany = null;
-let curModalTab = 0;
+let favSet = new Set(JSON.parse(localStorage.getItem('favs')||'[]'));
+let compareSet = new Set();
+
+function toggleFav(id, e) {
+  e.stopPropagation();
+  if (favSet.has(id)) favSet.delete(id); else favSet.add(id);
+  localStorage.setItem('favs', JSON.stringify([...favSet]));
+  renderTable();
+}
+
+function toggleCompare(id, e) {
+  e.stopPropagation();
+  if (compareSet.has(id)) compareSet.delete(id);
+  else if (compareSet.size < 4) compareSet.add(id);
+  else { alert('最多对比4家公司'); return; }
+  updateCompareBar();
+  renderTable();
+}
+
+function updateCompareBar() {
+  const bar = document.getElementById('compareBar');
+  const chips = document.getElementById('compareChips');
+  if (compareSet.size === 0) { bar.classList.remove('show'); return; }
+  bar.classList.add('show');
+  chips.innerHTML = [...compareSet].map(id => {
+    const c = COMPANIES.find(x => x.id === id);
+    return `<div class="compare-chip"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c.color};margin-right:2px"></span>${c.name}<button onclick="toggleCompare('${id}',event)">✕</button></div>`;
+  }).join('');
+}
+
+function clearCompare() { compareSet.clear(); updateCompareBar(); renderTable(); }
+
+function openCompareModal() {
+  if (compareSet.size < 2) { alert('请至少选择2家公司进行对比'); return; }
+  const companies = [...compareSet].map(id => COMPANIES.find(c => c.id === id));
+  const rows = [
+    { label:'营收(亿)', key:'rev', fmt: v => `¥${v.toFixed(1)}`, higher: true },
+    { label:'净利润(亿)', key:'profit', fmt: v => `${v>=0?'+':''}${v.toFixed(1)}`, higher: true },
+    { label:'同比增速', key:'growth', fmt: v => `${v>=0?'+':''}${v.toFixed(1)}%`, higher: true },
+    { label:'毛利率', key:'margin', fmt: v => `${v.toFixed(1)}%`, higher: true },
+    { label:'市场预期毛利率', key:'expectMargin', fmt: v => `${v.toFixed(1)}%`, higher: true },
+    { label:'是否超预期', key:'beatStatus', fmt: v => v==='beat'?'✅超出':v==='miss'?'❌低于':'➖符合', higher: false },
+  ];
+  const datas = companies.map(c => getCompanyData(c));
+  let html = `<div style="overflow-x:auto"><table class="compare-table"><thead><tr><th>指标</th>${companies.map(c=>`<th><div style="display:flex;align-items:center;justify-content:center;gap:6px"><div style="width:10px;height:10px;border-radius:50%;background:${c.color}"></div>${c.name}</div></th>`).join('')}</tr></thead><tbody>`;
+  rows.forEach(row => {
+    const vals = datas.map(d => d[row.key]);
+    let bestIdx = -1;
+    if (row.higher && typeof vals[0]==='number') {
+      const best = Math.max(...vals); bestIdx = vals.indexOf(best);
+    }
+    html += `<tr><td>${row.label}</td>${vals.map((v,i)=>`<td class="${i===bestIdx?'best':''}"> ${row.fmt(v)}</td>`).join('')}</tr>`;
+  });
+  // 加入基础信息行
+  html += `<tr><td>下次电话会议</td>${companies.map(c=>`<td style="color:var(--accent);font-size:12px">${c.nextCall?.date||'未定'}</td>`).join('')}</tr>`;
+  html += `<tr><td>股票代码</td>${companies.map(c=>`<td style="color:var(--text3)">${c.ticker}</td>`).join('')}</tr>`;
+  html += `</tbody></table></div>`;
+  // 洞察
+  const maxRev = companies[datas.indexOf(datas.reduce((a,b)=>a.rev>b.rev?a:b))];
+  const maxGrowth = companies[datas.indexOf(datas.reduce((a,b)=>getCompanyData(a).growth>getCompanyData(b).growth?a:b))];
+  const maxMargin = companies[datas.indexOf(datas.reduce((a,b)=>getCompanyData(a).margin>getCompanyData(b).margin?a:b))];
+  html += `<div class="insight-card" style="margin-top:16px"><div class="insight-title">💡 对比洞察</div>
+    <div class="insight-item">🏆 <span>营收规模最大：<strong>${maxRev.name}</strong>（${curYear}Q${curQ} ¥${datas[companies.indexOf(maxRev)].rev.toFixed(1)}亿）</span></div>
+    <div class="insight-item">🚀 <span>增速最快：<strong>${maxGrowth.name}</strong>（${datas[companies.indexOf(maxGrowth)].growth.toFixed(1)}% 同比增速）</span></div>
+    <div class="insight-item">💎 <span>毛利率最高：<strong>${maxMargin.name}</strong>（${datas[companies.indexOf(maxMargin)].margin.toFixed(1)}%，盈利能力最强）</span></div>
+  </div>`;
+  document.getElementById('compareContent').innerHTML = html;
+  document.getElementById('compareModal').classList.add('open');
+}
+
+
 
 function openDetail(c) {
   curCompany = c;
@@ -652,7 +778,8 @@ function switchTab(idx) {
   if (idx === 1) buildHistory(curCompany);
   if (idx === 2) buildEarnings(curCompany);
   if (idx === 3) buildSummary(curCompany);
-  if (idx === 4) buildOrg(curCompany);
+  if (idx === 4) buildInsight(curCompany);
+  if (idx === 5) buildOrg(curCompany);
 }
 
 function buildOverview(c, d) {
@@ -777,6 +904,78 @@ function buildSummary(c) {
       <p><strong style="color:var(--text)">业务亮点：</strong>${c.industry}业务保持增长势头，${c.region === '中国' ? '国内市场竞争格局持续优化' : '全球市场拓展顺利'}，管理层对未来季度持乐观态度。</p>
     </div>
     <div style="color:var(--text3);font-size:12px">⚠️ 以上数据为模拟数据，仅供学习参考。实际财报数据以公司官方发布为准。</div>
+  `;
+}
+
+function buildInsight(c) {
+  const container = document.getElementById('insightContent');
+  const hist = genHistory(c);
+  const recent = hist.slice(-8);
+  const latestQ = recent[recent.length - 1];
+  const prevQ = recent[recent.length - 2];
+  const rng = seededRand(c.id + 'insight' + curYear + curQ);
+
+  // 增速趋势分析
+  const growths = recent.map(h => h.growth);
+  const growthTrend = growths[growths.length-1] - growths[growths.length-3];
+  const trendLabel = growthTrend > 3 ? '📈 加速增长' : growthTrend < -3 ? '📉 增速放缓' : '➡️ 平稳增长';
+  const trendColor = growthTrend > 3 ? 'var(--green)' : growthTrend < -3 ? 'var(--red)' : 'var(--text2)';
+
+  // 毛利率趋势
+  const margins = recent.map(h => h.margin);
+  const marginTrend = margins[margins.length-1] - margins[0];
+  const marginLabel = marginTrend > 1 ? `提升 ${marginTrend.toFixed(1)}pp` : marginTrend < -1 ? `下降 ${Math.abs(marginTrend).toFixed(1)}pp` : '基本持平';
+
+  // 行业排名
+  const industryPeers = COMPANIES.filter(x => x.industry === c.industry);
+  const peersData = industryPeers.map(x => ({name: x.name, growth: getCompanyData(x).growth}));
+  peersData.sort((a,b) => b.growth - a.growth);
+  const myRank = peersData.findIndex(x => x.name === c.name) + 1;
+
+  // 最高最低增速季度
+  const maxG = hist.reduce((a,b) => a.growth > b.growth ? a : b);
+  const minG = hist.reduce((a,b) => a.growth < b.growth ? a : b);
+
+  // 盈利能力评分
+  const d = getCompanyData(c);
+  const scoreMargin = Math.min(Math.max(Math.round(d.margin / 2), 0), 30);
+  const scoreGrowth = Math.min(Math.max(Math.round((d.growth + 20) / 4), 0), 25);
+  const scoreBeat = d.beatStatus === 'beat' ? 25 : d.beatStatus === 'meet' ? 15 : 5;
+  const scoreProfit = d.profit > 0 ? 20 : 0;
+  const totalScore = scoreMargin + scoreGrowth + scoreBeat + scoreProfit;
+  const grade = totalScore >= 80 ? 'S' : totalScore >= 65 ? 'A' : totalScore >= 50 ? 'B' : totalScore >= 35 ? 'C' : 'D';
+  const gradeColor = {'S':'#7c3aed','A':'var(--green)','B':'var(--accent)','C':'var(--yellow)','D':'var(--red)'}[grade];
+
+  container.innerHTML = `
+    <div class="insight-card">
+      <div class="insight-title">💡 ${curYear}Q${curQ} 核心洞察</div>
+      <div class="insight-item"><span style="color:${trendColor};font-weight:700">${trendLabel}</span> &nbsp;过去8个季度增速变化 ${growthTrend > 0 ? '+' : ''}${growthTrend.toFixed(1)}pp</div>
+      <div class="insight-item">🏭 <span>毛利率近8季度${marginLabel}，当前 <strong>${d.margin.toFixed(1)}%</strong></span></div>
+      <div class="insight-item">🏆 <span>${c.industry}行业增速排名：第 <strong>${myRank}</strong> 位（共${industryPeers.length}家）</span></div>
+      <div class="insight-item">${d.beatStatus === 'beat' ? '✅' : d.beatStatus === 'miss' ? '❌' : '➖'} <span>本季度${d.beatStatus === 'beat' ? '<strong style="color:var(--green)">超出市场预期</strong>，毛利率高于预期 ' + (d.margin - d.expectMargin).toFixed(1) + 'pp' : d.beatStatus === 'miss' ? '<strong style="color:var(--red)">低于市场预期</strong>，毛利率低于预期 ' + (d.expectMargin - d.margin).toFixed(1) + 'pp' : '符合市场预期'}</span></div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-title">📊 综合评分</div>
+      <div style="display:flex;align-items:center;gap:20px;margin-bottom:12px">
+        <div style="width:64px;height:64px;border-radius:50%;border:3px solid ${gradeColor};display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:${gradeColor}">${grade}</div>
+        <div>
+          <div style="font-size:22px;font-weight:700">${totalScore}<span style="font-size:13px;color:var(--text3)">/100</span></div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">${grade === 'S' ? '卓越表现' : grade === 'A' ? '优秀' : grade === 'B' ? '良好' : grade === 'C' ? '一般' : '较弱'}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 12px"><div style="color:var(--text3);font-size:11px">毛利率评分</div><div style="font-weight:700;margin-top:3px">${scoreMargin}/30</div></div>
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 12px"><div style="color:var(--text3);font-size:11px">增速评分</div><div style="font-weight:700;margin-top:3px">${scoreGrowth}/25</div></div>
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 12px"><div style="color:var(--text3);font-size:11px">预期超越评分</div><div style="font-weight:700;margin-top:3px">${scoreBeat}/25</div></div>
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 12px"><div style="color:var(--text3);font-size:11px">盈利能力</div><div style="font-weight:700;margin-top:3px">${scoreProfit}/20</div></div>
+      </div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-title">📅 历史极值回顾</div>
+      <div class="insight-item">🚀 <span>历史最高增速：<strong style="color:var(--green)">${maxG.period}</strong>，同比 +${maxG.growth.toFixed(1)}%，营收 ¥${maxG.rev.toFixed(0)}亿</span></div>
+      <div class="insight-item">⚠️ <span>历史最低增速：<strong style="color:var(--red)">${minG.period}</strong>，同比 ${minG.growth >= 0 ? '+' : ''}${minG.growth.toFixed(1)}%，营收 ¥${minG.rev.toFixed(0)}亿</span></div>
+      <div class="insight-item">💰 <span>行业对比最强对手：<strong>${peersData[0]?.name}</strong>（增速 ${peersData[0]?.growth.toFixed(1)}%）</span></div>
+    </div>
   `;
 }
 
