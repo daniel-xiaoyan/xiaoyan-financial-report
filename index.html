@@ -263,6 +263,63 @@
   .interp-co-tag { font-size: 10px; padding: 1px 6px; border-radius: 4px; background: rgba(0,0,0,0.06); color: var(--text3); }
   .interp-section-title { font-size: 13px; font-weight: 700; color: var(--text2); margin: 16px 0 10px; display: flex; align-items: center; gap: 6px; }
   .interp-section-title::before { content: ''; display: block; width: 3px; height: 13px; background: var(--accent); border-radius: 2px; }
+  /* 折线图 SVG */
+  .line-chart-wrap { width: 100%; overflow-x: auto; }
+  /* 季度对比弹窗 */
+  .qcmp-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 350; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+  .qcmp-bg.open { display: flex; }
+  .qcmp-modal { background: var(--card); border-radius: 16px; width: 100%; max-width: 720px; max-height: 88vh; overflow: hidden; display: flex; flex-direction: column; }
+  .qcmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .qcmp-card { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .qcmp-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .qcmp-val { font-size: 18px; font-weight: 800; }
+  .qcmp-change { font-size: 12px; margin-top: 2px; }
+  .qcmp-verdict { border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; border: 1px solid; }
+  .qcmp-verdict.positive { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.25); }
+  .qcmp-verdict.negative { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.25); }
+  .qcmp-verdict.neutral { background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.25); }
+  /* 关联解读弹窗 */
+  .cross-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 270; display: none; align-items: flex-start; justify-content: center; padding: 20px; backdrop-filter: blur(5px); overflow-y: auto; }
+  .cross-bg.open { display: flex; }
+  .cross-modal { background: var(--card); border-radius: 16px; width: 100%; max-width: 920px; margin: auto; overflow: hidden; }
+  .cross-section { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+  .cross-title { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .cross-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .cross-co { font-size: 13px; font-weight: 600; min-width: 80px; }
+  .cross-bar-bg { flex: 1; height: 8px; background: rgba(0,0,0,0.08); border-radius: 4px; }
+  .cross-bar-fill { height: 100%; border-radius: 4px; }
+  .cross-num { font-size: 13px; font-weight: 700; min-width: 60px; text-align: right; }
+  /* 分业务线 */
+  .seg-wrap { display: flex; flex-direction: column; gap: 8px; }
+  .seg-row { display: flex; align-items: center; gap: 10px; }
+  .seg-name { font-size: 12px; color: var(--text2); min-width: 120px; }
+  .seg-bar-bg { flex: 1; height: 10px; background: rgba(0,0,0,0.06); border-radius: 5px; }
+  .seg-bar-fill { height: 100%; border-radius: 5px; }
+  .seg-pct { font-size: 12px; font-weight: 700; min-width: 36px; text-align: right; }
+  .seg-rev { font-size: 11px; color: var(--text3); min-width: 60px; text-align: right; }
+  /* 估值对比 */
+  .val-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+  .val-table th { padding: 8px 12px; background: var(--card2); border: 1px solid var(--border); text-align: center; font-size: 11px; color: var(--text3); font-weight: 600; text-transform: uppercase; }
+  .val-table td { padding: 9px 12px; border: 1px solid var(--border); text-align: center; }
+  .val-table td:first-child { text-align: left; font-weight: 600; }
+  .val-cheap { color: var(--green); font-weight: 700; }
+  .val-expensive { color: var(--red); font-weight: 700; }
+  /* 移动端卡片视图 */
+  .card-view-grid { display: none; padding: 12px 16px; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 10px; }
+  .card-view-grid.active { display: grid; }
+  .main-table-wrap.hidden { display: none; }
+  .co-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.15s; }
+  .co-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); border-color: var(--accent); }
+  .co-card-logo { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .co-card-name { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .co-card-ticker { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+  .co-card-rev { font-size: 18px; font-weight: 800; color: var(--accent); }
+  .co-card-growth { font-size: 12px; font-weight: 700; margin-top: 2px; }
+  .co-card-margin { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  /* 视图切换按钮 */
+  .view-toggle { display: flex; gap: 4px; }
+  .view-btn { background: transparent; border: 1px solid var(--border); color: var(--text2); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.15s; }
+  .view-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
   @media(max-width:640px) {
     .header, .time-bar, .filters { padding: 12px 16px; }
     .table-wrap { padding: 0 16px 16px; }
@@ -340,6 +397,12 @@
     <button class="quick-btn" onclick="quickFilter('top10')">Top 10</button>
     <button class="quick-btn" onclick="quickFilter('')">重置</button>
   </div>
+  <div class="view-toggle">
+    <button class="view-btn active" id="tableViewBtn" onclick="switchView('table')" title="表格视图">☰ 表格</button>
+    <button class="view-btn" id="cardViewBtn" onclick="switchView('card')" title="卡片视图">⊞ 卡片</button>
+  </div>
+  <button class="share-btn" onclick="openCrossAnalysis()" style="margin-left:4px">🔗 关联解读</button>
+  <button class="share-btn" onclick="exportFavPDF()" style="margin-left:4px">📄 导出PDF</button>
   <span class="count-info" id="countInfo">显示 0 家公司</span>
 </div>
 
@@ -356,7 +419,9 @@
   <div class="core-interp-body" id="coreInterpBody"></div>
 </div>
 
-<div class="table-wrap">
+<div id="cardViewGrid" class="card-view-grid"></div>
+
+<div class="table-wrap main-table-wrap" id="mainTableWrap">
   <table id="mainTable">
     <thead>
       <tr>
@@ -392,7 +457,8 @@
         <h2 id="mName"></h2>
         <div class="subtitle" id="mSubtitle"></div>
       </div>
-      <button class="modal-close" onclick="document.getElementById('detailModal').classList.remove('open')">✕</button>
+      <button class="share-btn" style="margin-left:auto" onclick="openQCmp(curCompany)">📊 季度对比</button>
+      <button class="modal-close" style="margin-left:8px" onclick="document.getElementById('detailModal').classList.remove('open')">✕</button>
     </div>
     <div class="modal-tabs">
       <button class="m-tab active" onclick="switchTab(0)">📈 财务概览</button>
@@ -401,6 +467,9 @@
       <button class="m-tab" onclick="switchTab(3)">📰 业绩摘要</button>
       <button class="m-tab" onclick="switchTab(4)">💡 AI洞察</button>
       <button class="m-tab" onclick="switchTab(5)">🏢 组织架构</button>
+      <button class="m-tab" onclick="switchTab(6)">📊 估值分析</button>
+      <button class="m-tab" onclick="switchTab(7)">🏭 业务拆解</button>
+      <button class="m-tab" onclick="switchTab(8)">📈 趋势图表</button>
     </div>
     <div class="modal-body">
       <div class="tab-panel active" id="panel0"><div class="kpi-grid" id="kpiGrid"></div><div class="chart-area"><div class="section-title">营收趋势（近8季度）</div><div class="chart-legend"><div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>营收</div><div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>净利润</div></div><div class="chart-bars" id="revChart"></div></div><div class="chart-area"><div class="section-title">关键指标</div><div id="keyMetrics" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;font-size:13px"></div></div></div>
@@ -409,6 +478,9 @@
       <div class="tab-panel" id="panel3"><div id="summaryContent"></div></div>
       <div class="tab-panel" id="panel4"><div id="insightContent"></div></div>
       <div class="tab-panel" id="panel5"><div id="orgContent"></div></div>
+      <div class="tab-panel" id="panel6"><div id="valuationContent"></div></div>
+      <div class="tab-panel" id="panel7"><div id="segmentContent"></div></div>
+      <div class="tab-panel" id="panel8"><div id="chartContent"></div></div>
     </div>
   </div>
 </div>
@@ -427,6 +499,29 @@
       <button class="modal-close" onclick="document.getElementById('panoramaModal').classList.remove('open')">✕</button>
     </div>
     <div style="flex:1;overflow-y:auto;padding:20px 24px" id="panoramaContent"></div>
+  </div>
+</div>
+
+<!-- 季度对比弹窗 -->
+<div class="qcmp-bg" id="qcmpModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="qcmp-modal" onclick="event.stopPropagation()">
+    <div style="padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <h3 style="font-size:16px;font-weight:700">📊 季度环比分析</h3>
+      <button class="modal-close" onclick="document.getElementById('qcmpModal').classList.remove('open')">✕</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:20px 24px" id="qcmpContent"></div>
+  </div>
+</div>
+
+<!-- 关联解读弹窗 -->
+<div class="cross-bg" id="crossModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="cross-modal" onclick="event.stopPropagation()">
+    <div style="padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(99,102,241,0.05))">
+      <div><h3 style="font-size:17px;font-weight:700">🔗 跨公司关联解读</h3>
+      <p style="font-size:12px;color:var(--text3);margin-top:3px">中美科技巨头横向对比 · 行业生态关联分析</p></div>
+      <button class="modal-close" onclick="document.getElementById('crossModal').classList.remove('open')">✕</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:20px 24px" id="crossContent"></div>
   </div>
 </div>
 
@@ -630,6 +725,99 @@ const REAL_DATA = {
     {r:13176,p:1023,g:17,m:48},{r:14801,p:1315,g:25,m:49},{r:15793,p:1581,g:26,m:48},{r:18745,p:2042,g:28,m:49},
     {r:16023,p:1715,g:22,m:49},{r:17300,p:1800,g:17,m:49},{r:18100,p:1920,g:15,m:50},{r:20000,p:2200,g:7,m:50}
   ],
+};
+
+// ===== 分业务线营收拆解数据（亿元人民币，最新季度）=====
+const BIZ_SEGMENTS = {
+  tencent: { title:'腾讯营收拆解', color:'#0bc8a7', segments:[
+    {name:'增值服务(游戏+会员)',pct:47,rev:847,color:'#0bc8a7',detail:'手游/端游+腾讯视频/音乐会员'},
+    {name:'金融科技及企业服务',pct:34,rev:612,color:'#3b82f6',detail:'微信支付+腾讯云+企业微信'},
+    {name:'网络广告',pct:17,rev:306,color:'#f59e0b',detail:'微信广告+视频号广告'},
+    {name:'其他',pct:2,rev:36,color:'#94a3b8',detail:'其他'},
+  ]},
+  nvda: { title:'NVIDIA营收拆解', color:'#76b900', segments:[
+    {name:'数据中心',pct:88,rev:4486,color:'#76b900',detail:'AI训练/推理芯片 H100/H200/Blackwell'},
+    {name:'游戏',pct:8,rev:408,color:'#3b82f6',detail:'GeForce RTX显卡'},
+    {name:'专业可视化',pct:2,rev:102,color:'#f59e0b',detail:'RTX专业显卡'},
+    {name:'汽车+OEM',pct:2,rev:102,color:'#ef4444',detail:'Drive平台+OEM'},
+  ]},
+  baba: { title:'阿里巴巴营收拆解', color:'#f97316', segments:[
+    {name:'中国零售商业',pct:58,rev:1615,color:'#f97316',detail:'淘宝+天猫+淘特'},
+    {name:'云智能',pct:14,rev:390,color:'#3b82f6',detail:'阿里云+通义大模型'},
+    {name:'国际商业',pct:11,rev:306,color:'#10b981',detail:'Lazada+速卖通+Trendyol'},
+    {name:'本地生活',pct:8,rev:223,color:'#f59e0b',detail:'饿了么+高德'},
+    {name:'菜鸟物流',pct:6,rev:167,color:'#8b5cf6',detail:'国内+国际物流'},
+    {name:'数字媒体',pct:3,rev:84,color:'#94a3b8',detail:'优酷'},
+  ]},
+  aapl: { title:'Apple营收拆解', color:'#555', segments:[
+    {name:'iPhone',pct:52,rev:3432,color:'#555',detail:'iPhone系列'},
+    {name:'服务',pct:22,rev:1452,color:'#3b82f6',detail:'App Store+Apple TV++iCloud'},
+    {name:'Mac',pct:8,rev:528,color:'#6366f1',detail:'MacBook系列'},
+    {name:'iPad',pct:6,rev:396,color:'#f59e0b',detail:'iPad系列'},
+    {name:'可穿戴+配件',pct:12,rev:792,color:'#10b981',detail:'Apple Watch+AirPods+Vision Pro'},
+  ]},
+  msft: { title:'Microsoft营收拆解', color:'#0078d4', segments:[
+    {name:'智能云(Azure)',pct:44,rev:2461,color:'#0078d4',detail:'Azure云服务+AI Copilot'},
+    {name:'效率工具(Office)',pct:33,rev:1847,color:'#3b82f6',detail:'Microsoft 365+LinkedIn+Dynamics'},
+    {name:'个人计算(Windows)',pct:23,rev:1287,color:'#6366f1',detail:'Windows+Xbox+Surface+Bing'},
+  ]},
+  googl: { title:'Alphabet营收拆解', color:'#4285f4', segments:[
+    {name:'Google搜索广告',pct:57,rev:2017,color:'#4285f4',detail:'搜索广告'},
+    {name:'YouTube广告',pct:11,rev:389,color:'#ff0000',detail:'YouTube广告收入'},
+    {name:'Google Cloud',pct:12,rev:425,color:'#34a853',detail:'GCP+Workspace'},
+    {name:'Google网络',pct:9,rev:319,color:'#fbbc05',detail:'AdSense等'},
+    {name:'Other Bets+Other',pct:11,rev:390,color:'#94a3b8',detail:'Waymo+硬件+其他'},
+  ]},
+  meta: { title:'Meta营收拆解', color:'#1877f2', segments:[
+    {name:'广告收入',pct:98,rev:3214,color:'#1877f2',detail:'Facebook+Instagram+Reels广告'},
+    {name:'Reality Labs',pct:2,rev:66,color:'#8b5cf6',detail:'Quest头显+AI眼镜'},
+  ]},
+  amzn: { title:'Amazon营收拆解', color:'#ff9900', segments:[
+    {name:'北美电商',pct:41,rev:8200,color:'#ff9900',detail:'北美在线零售+广告'},
+    {name:'AWS云服务',pct:18,rev:3600,color:'#3b82f6',detail:'AWS+AI服务'},
+    {name:'国际电商',pct:23,rev:4600,color:'#10b981',detail:'国际在线零售'},
+    {name:'广告服务',pct:10,rev:2000,color:'#f59e0b',detail:'亚马逊站内广告'},
+    {name:'订阅服务',pct:8,rev:1600,color:'#8b5cf6',detail:'Prime会员'},
+  ]},
+  meituan: { title:'美团营收拆解', color:'#ffcd00', segments:[
+    {name:'核心本地商业',pct:70,rev:770,color:'#ffcd00',detail:'外卖+到店+酒旅'},
+    {name:'新业务',pct:30,rev:330,color:'#3b82f6',detail:'美团买菜+闪购+Keeta海外'},
+  ]},
+  bytedance: { title:'字节跳动营收拆解', color:'#010101', segments:[
+    {name:'抖音国内广告+电商',pct:60,rev:5700,color:'#010101',detail:'抖音广告+电商佣金'},
+    {name:'TikTok海外',pct:22,rev:2090,color:'#3b82f6',detail:'TikTok广告+电商'},
+    {name:'教育+游戏+其他',pct:18,rev:1710,color:'#94a3b8',detail:'教育+游戏+企业服务'},
+  ]},
+  ks: { title:'快手营收拆解', color:'#ff4500', segments:[
+    {name:'线上营销(广告)',pct:58,rev:667,color:'#ff4500',detail:'信息流广告+直播电商'},
+    {name:'直播打赏',pct:28,rev:322,color:'#f59e0b',detail:'礼物收入'},
+    {name:'其他服务',pct:14,rev:161,color:'#3b82f6',detail:'电商佣金+会员'},
+  ]},
+  bidu: { title:'百度营收拆解', color:'#2932e1', segments:[
+    {name:'核心(搜索广告)',pct:72,rev:320,color:'#2932e1',detail:'搜索广告+AI搜索'},
+    {name:'iQIYI',pct:18,rev:80,color:'#00be06',detail:'爱奇艺会员+广告'},
+    {name:'智能云+AI',pct:10,rev:45,color:'#3b82f6',detail:'文心大模型API+百度云'},
+  ]},
+};
+
+// ===== PE/PS/市值等估值数据 =====
+const VALUATION = {
+  aapl:  {pe:28.5,ps:8.2,pb:52.1,mktcap:232000,fwdPE:26.8},
+  msft:  {pe:35.2,ps:12.8,pb:12.5,mktcap:295000,fwdPE:31.5},
+  googl: {pe:22.8,ps:6.5,pb:6.8,mktcap:185000,fwdPE:19.2},
+  amzn:  {pe:42.5,ps:3.8,pb:8.5,mktcap:195000,fwdPE:35.8},
+  meta:  {pe:24.5,ps:9.8,pb:7.2,mktcap:128000,fwdPE:21.2},
+  nvda:  {pe:45.8,ps:22.5,pb:45.2,mktcap:325000,fwdPE:32.5},
+  tencent:{pe:20.5,ps:5.8,pb:4.2,mktcap:37000,fwdPE:17.8},
+  baba:  {pe:14.5,ps:2.2,pb:1.8,mktcap:18000,fwdPE:12.8},
+  meituan:{pe:25.8,ps:3.2,pb:8.5,mktcap:12000,fwdPE:22.5},
+  jd:    {pe:18.5,ps:0.4,pb:2.8,mktcap:4200,fwdPE:16.2},
+  pdd:   {pe:12.5,ps:2.8,pb:5.2,mktcap:14500,fwdPE:10.8},
+  ks:    {pe:22.5,ps:2.5,pb:3.8,mktcap:2500,fwdPE:19.5},
+  bidu:  {pe:16.5,ps:1.8,pb:1.5,mktcap:2800,fwdPE:14.2},
+  ntes:  {pe:15.5,ps:3.2,pb:3.5,mktcap:2200,fwdPE:13.8},
+  xm:    {pe:20.5,ps:1.2,pb:4.5,mktcap:4500,fwdPE:17.8},
+  bytedance:{pe:22,ps:4.2,pb:8.5,mktcap:42000,fwdPE:18.5},
 };
 
 const COMPANIES = [
@@ -1559,6 +1747,310 @@ function buildSummary(c) {
   `;
 }
 
+// ====================== 视图切换（表格/卡片）======================
+let curView = 'table';
+function switchView(v) {
+  curView = v;
+  document.getElementById('tableViewBtn').classList.toggle('active', v === 'table');
+  document.getElementById('cardViewBtn').classList.toggle('active', v === 'card');
+  document.getElementById('mainTableWrap').classList.toggle('hidden', v === 'card');
+  const grid = document.getElementById('cardViewGrid');
+  if (v === 'card') { grid.classList.add('active'); renderCardView(); }
+  else { grid.classList.remove('active'); }
+}
+function renderCardView() {
+  const filtered = sortedCompanies(filterCompanies());
+  document.getElementById('cardViewGrid').innerHTML = filtered.map(c => {
+    const d = getCompanyData(c);
+    const isReal = !!REAL_DATA[c.id];
+    const gc = d.growth >= 20 ? 'var(--green)' : d.growth >= 0 ? 'var(--accent)' : 'var(--red)';
+    return `<div class="co-card" onclick="openDetail(COMPANIES.find(x=>x.id==='${c.id}'))">
+      <div class="co-card-logo" style="background:${c.color}">${c.name[0]}</div>
+      <div class="co-card-name">${c.name}</div>
+      <div class="co-card-ticker">${c.ticker} · ${c.region}</div>
+      <div class="co-card-rev">¥${d.rev.toFixed(0)}亿</div>
+      <div class="co-card-growth" style="color:${gc}">${d.growth>=0?'+':''}${d.growth.toFixed(1)}% yoy</div>
+      <div class="co-card-margin">毛利率 ${d.margin.toFixed(1)}%</div>
+      <span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-top:5px;background:${isReal?'rgba(16,185,129,0.1)':'rgba(245,158,11,0.1)'};color:${isReal?'var(--green)':'var(--yellow)'}">${isReal?'✅真实':'⚠️模拟'}</span>
+    </div>`;
+  }).join('');
+}
+
+// ====================== 季度环比分析 ======================
+function openQCmp(c) {
+  const hist = genHistory(c);
+  const curIdx = hist.findIndex(h => h.y===curYear && h.q===curQ);
+  if (curIdx < 1) { alert('没有上季度数据'); return; }
+  const cur = hist[curIdx], prev = hist[curIdx-1], prev4 = curIdx >= 4 ? hist[curIdx-4] : null;
+  const revDelta = ((cur.rev - prev.rev) / prev.rev * 100);
+  const profitDelta = cur.profit - prev.profit;
+  const marginDelta = cur.margin - prev.margin;
+  const growthDelta = prev4 ? (cur.growth - (prev4.growth||0)) : null;
+
+  const positives = [], negatives = [], neutrals = [];
+  if (revDelta > 5) positives.push(`营收环比增长 +${revDelta.toFixed(1)}%，季度增势强劲`);
+  else if (revDelta > 0) neutrals.push(`营收环比小幅增长 +${revDelta.toFixed(1)}%，基本平稳`);
+  else negatives.push(`营收环比下滑 ${revDelta.toFixed(1)}%，${Math.abs(revDelta)<5?'季节性因素':'需关注增长放缓'}`);
+  if (marginDelta > 1) positives.push(`毛利率提升 +${marginDelta.toFixed(1)}pp，盈利能力改善`);
+  else if (marginDelta < -1) negatives.push(`毛利率下降 ${marginDelta.toFixed(1)}pp，成本压力或结构变化`);
+  else neutrals.push(`毛利率基本持平（${marginDelta>=0?'+':''}${marginDelta.toFixed(1)}pp）`);
+  if (profitDelta > 0) positives.push(`净利润环比增加 ¥${profitDelta.toFixed(1)}亿`);
+  else if (profitDelta < 0) negatives.push(`净利润环比减少 ¥${Math.abs(profitDelta).toFixed(1)}亿`);
+  if (growthDelta !== null) {
+    if (growthDelta > 5) positives.push(`同比增速较去年同期提升 +${growthDelta.toFixed(1)}pp，增速加速`);
+    else if (growthDelta < -5) negatives.push(`同比增速较去年同期下降 ${Math.abs(growthDelta).toFixed(1)}pp，增速放缓`);
+  }
+
+  const isPos = positives.length > negatives.length, isNeut = positives.length === negatives.length;
+  const vc = isNeut ? 'neutral' : isPos ? 'positive' : 'negative';
+  const vt = isNeut ? '本季表现与上季度基本持平，无明显改善或恶化。'
+    : isPos ? `本季度整体改善，${positives.length}项正向指标，多空均衡偏乐观。`
+    : `本季度有所承压，${negatives.length}项指标下滑，需持续观察。`;
+
+  const metrics = [
+    {label:'营收', cur:`¥${cur.rev.toFixed(1)}亿`, prev:`¥${prev.rev.toFixed(1)}亿`, delta:`${revDelta>=0?'+':''}${revDelta.toFixed(1)}%`, pos:revDelta>=0},
+    {label:'净利润', cur:`¥${cur.profit.toFixed(1)}亿`, prev:`¥${prev.profit.toFixed(1)}亿`, delta:`${profitDelta>=0?'+':''}¥${profitDelta.toFixed(1)}亿`, pos:profitDelta>=0},
+    {label:'同比增速', cur:`${(cur.growth||0)>=0?'+':''}${(cur.growth||0).toFixed(1)}%`, prev:`${(prev.growth||0)>=0?'+':''}${(prev.growth||0).toFixed(1)}%`, delta:growthDelta!=null?`${growthDelta>=0?'+':''}${growthDelta.toFixed(1)}pp(vs去年同期)`:'—', pos:(growthDelta||0)>=0},
+    {label:'毛利率', cur:`${cur.margin.toFixed(1)}%`, prev:`${prev.margin.toFixed(1)}%`, delta:`${marginDelta>=0?'+':''}${marginDelta.toFixed(1)}pp`, pos:marginDelta>=0},
+  ];
+
+  document.getElementById('qcmpContent').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="width:40px;height:40px;border-radius:8px;background:${c.color};display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700">${c.name[0]}</div>
+      <div><div style="font-size:15px;font-weight:700">${c.name}</div>
+      <div style="font-size:12px;color:var(--text3)">${curYear}Q${curQ} vs ${prev.y}Q${prev.q}</div></div>
+    </div>
+    <div class="qcmp-grid">
+      ${metrics.map(m => `<div class="qcmp-card"><div class="qcmp-label">${m.label}</div>
+        <div class="qcmp-val" style="color:${m.pos?'var(--green)':'var(--red)'}">${m.cur}</div>
+        <div class="qcmp-change" style="color:var(--text3)">上季 ${m.prev}</div>
+        <div class="qcmp-change" style="color:${m.pos?'var(--green)':'var(--red)'}">环比 ${m.delta}</div>
+      </div>`).join('')}
+    </div>
+    <div class="qcmp-verdict ${vc}"><div style="font-size:14px;font-weight:700;margin-bottom:8px">${isNeut?'➖':isPos?'✅':'⚠️'} 综合判断</div>
+    <p style="font-size:13px;color:var(--text2);line-height:1.7">${vt}</p></div>
+    ${positives.length?`<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px">✅ 改善点</div>${positives.map(p=>`<div style="font-size:13px;color:var(--text2);padding:5px 0;border-bottom:1px solid var(--border)">• ${p}</div>`).join('')}</div>`:''}
+    ${negatives.length?`<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:6px">⚠️ 风险点</div>${negatives.map(n=>`<div style="font-size:13px;color:var(--text2);padding:5px 0;border-bottom:1px solid var(--border)">• ${n}</div>`).join('')}</div>`:''}
+    ${neutrals.length?`<div><div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:6px">➖ 中性观测</div>${neutrals.map(n=>`<div style="font-size:13px;color:var(--text2);padding:5px 0;border-bottom:1px solid var(--border)">• ${n}</div>`).join('')}</div>`:''}
+    <div style="margin-top:14px;font-size:11px;color:var(--text3)">⚠️ 仅供参考，不构成投资建议</div>`;
+  document.getElementById('qcmpModal').classList.add('open');
+}
+
+// ====================== 估值分析 Tab ======================
+function buildValuation(c) {
+  const val = VALUATION[c.id];
+  const d = getCompanyData(c);
+  const container = document.getElementById('valuationContent');
+  if (!val) { container.innerHTML = `<div class="empty"><div style="font-size:48px;margin-bottom:12px">📊</div><div>该公司估值数据暂未收录</div></div>`; return; }
+  const peers = COMPANIES.filter(x => x.industry === c.industry && VALUATION[x.id]);
+  const peersVal = peers.map(x => ({c:x, v:VALUATION[x.id], d:getCompanyData(x)}));
+  peersVal.sort((a,b) => (a.v.pe||0) - (b.v.pe||0));
+  const avgPE = peersVal.reduce((s,x) => s + (x.v.pe||0), 0) / (peersVal.length||1);
+  const myRankPE = peersVal.findIndex(x => x.c.id === c.id) + 1;
+  const isCheap = val.pe > 0 && val.pe < avgPE * 0.9;
+  const isExpensive = val.pe > 0 && val.pe > avgPE * 1.2;
+  container.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px">
+      ${[
+        {label:'市盈率 (PE)', val:val.pe>0?val.pe+'x':'N/A', sub: val.pe<15?'低PE，价值股特征':val.pe<25?'合理PE，成熟企业':val.pe<40?'偏高PE，成长股':val.pe>0?'高PE，高增速支撑':'未盈利', ok:val.pe>0&&val.pe<30},
+        {label:'远期PE', val:val.fwdPE>0?val.fwdPE+'x':'N/A', sub:'预期12个月盈利', ok:val.fwdPE>0&&val.fwdPE<30},
+        {label:'市销率 (PS)', val:val.ps+'x', sub:val.ps<3?'低PS，保守预期':val.ps<8?'合理区间':val.ps<15?'高PS，高增速溢价':'极高PS', ok:val.ps<8},
+        {label:'市净率 (PB)', val:val.pb+'x', sub:'账面价值倍数', ok:val.pb<5},
+        {label:'市值', val:val.mktcap>10000?`¥${(val.mktcap/10000).toFixed(1)}万亿`:`¥${val.mktcap}亿`, sub:'人民币估算', ok:true},
+        {label:'行业PE排名', val:`第${myRankPE}/${peersVal.length}`, sub:isCheap?'相对便宜':isExpensive?'相对昂贵':'估值居中', ok:!isExpensive},
+      ].map(k=>`<div class="kpi-card"><div class="kpi-label">${k.label}</div><div class="kpi-value ${k.ok?'positive':''}" style="font-size:16px">${k.val}</div><div style="font-size:11px;color:var(--text3);margin-top:3px">${k.sub}</div></div>`).join('')}
+    </div>
+    ${peersVal.length > 1 ? `<div class="chart-area"><div class="section-title">📊 ${c.industry}行业 PE 横向对比</div>
+    <div class="seg-wrap" style="margin-top:12px">
+      ${peersVal.map(x=>{const isMe=x.c.id===c.id;const maxPE=Math.max(...peersVal.map(p=>p.v.pe||0));
+        return `<div class="seg-row"><div class="seg-name" style="${isMe?'font-weight:700;color:var(--accent)':''}">
+          ${x.c.name}</div><div class="seg-bar-bg"><div class="seg-bar-fill" style="width:${x.v.pe>0?((x.v.pe/maxPE*100).toFixed(0))+'%':'0'};background:${isMe?'var(--accent)':x.c.color}"></div></div>
+          <div class="seg-pct" style="color:${isMe?'var(--accent)':x.v.pe<avgPE?'var(--green)':'var(--red)'}">${x.v.pe>0?x.v.pe+'x':'N/A'}</div>
+          <div class="seg-rev">${x.d.growth>=0?'+':''}${x.d.growth.toFixed(0)}%增速</div></div>`;
+      }).join('')}
+      <div style="font-size:11px;color:var(--text3);margin-top:8px">行业均值 PE：${avgPE.toFixed(1)}x</div>
+    </div></div>` : ''}
+    <div style="background:${isCheap?'rgba(16,185,129,0.08)':isExpensive?'rgba(239,68,68,0.08)':'rgba(99,102,241,0.08)'};border:1px solid ${isCheap?'rgba(16,185,129,0.25)':isExpensive?'rgba(239,68,68,0.25)':'rgba(99,102,241,0.25)'};border-radius:10px;padding:14px;margin-top:4px">
+      <div style="font-size:12px;font-weight:700;margin-bottom:6px;color:${isCheap?'var(--green)':isExpensive?'var(--red)':'var(--accent2)'}">${isCheap?'💚 相对低估':isExpensive?'🔴 相对高估':'⚖️ 估值合理'}</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">${c.name} 当前PE ${val.pe}x，${isCheap?`低于行业均值${avgPE.toFixed(1)}x（折价${((1-val.pe/avgPE)*100).toFixed(0)}%）。`:isExpensive?`高于行业均值${avgPE.toFixed(1)}x（溢价${((val.pe/avgPE-1)*100).toFixed(0)}%）。`:`接近行业均值${avgPE.toFixed(1)}x，估值较为合理。`}${d.growth>20?'当前高增速能部分支撑高估值。':d.growth>0?'增速稳健，估值基本匹配。':'增速承压，关注估值是否存在压缩风险。'}</p>
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:var(--text3)">⚠️ 估值数据仅供参考，不构成投资建议</div>`;
+}
+
+// ====================== 分业务线 Tab ======================
+function buildSegment(c) {
+  const seg = BIZ_SEGMENTS[c.id];
+  const container = document.getElementById('segmentContent');
+  if (!seg) { container.innerHTML = `<div class="empty"><div style="font-size:48px;margin-bottom:12px">🏭</div><div>该公司分业务线数据暂未收录</div></div>`; return; }
+  const size = 120, cx = 60, cy = 60, r = 50;
+  let sa = -Math.PI/2;
+  const paths = seg.segments.map(s => {
+    const angle = (s.pct/100)*2*Math.PI;
+    const x1=cx+r*Math.cos(sa), y1=cy+r*Math.sin(sa);
+    const x2=cx+r*Math.cos(sa+angle), y2=cy+r*Math.sin(sa+angle);
+    const p = `M${cx},${cy} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r},0,${angle>Math.PI?1:0},1,${x2.toFixed(1)},${y2.toFixed(1)} Z`;
+    sa += angle;
+    return `<path d="${p}" fill="${s.color}" opacity="0.85" stroke="var(--card)" stroke-width="2"><title>${s.name}: ${s.pct}%</title></path>`;
+  });
+  container.innerHTML = `
+    <div class="section-title">${seg.title}</div>
+    <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px">
+      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex-shrink:0">${paths.join('')}</svg>
+      <div style="display:flex;flex-direction:column;gap:5px;flex:1">
+        ${seg.segments.map(s=>`<div style="display:flex;align-items:center;gap:6px;font-size:12px">
+          <div style="width:10px;height:10px;border-radius:3px;background:${s.color};flex-shrink:0"></div>
+          <span style="color:var(--text2);flex:1">${s.name}</span><span style="font-weight:700">${s.pct}%</span>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="chart-area"><div class="section-title">各业务线营收贡献（参考最新季度）</div>
+    <div class="seg-wrap" style="margin-top:12px">
+      ${seg.segments.map(s=>`<div class="seg-row">
+        <div class="seg-name">${s.name}</div>
+        <div class="seg-bar-bg"><div class="seg-bar-fill" style="width:${s.pct}%;background:${s.color}"></div></div>
+        <div class="seg-pct">${s.pct}%</div><div class="seg-rev">¥${s.rev}亿</div>
+      </div><div style="font-size:11px;color:var(--text3);margin:-2px 0 6px 122px">${s.detail}</div>`).join('')}
+    </div></div>`;
+}
+
+// ====================== 折线图 + 散点图 Tab ======================
+function buildCharts(c) {
+  const hist = genHistory(c);
+  const container = document.getElementById('chartContent');
+  const recent = hist.slice(-12);
+  const W=520, H=160, p={t:20,r:20,b:35,l:45};
+  const iW=W-p.l-p.r, iH=H-p.t-p.b;
+  const revs=recent.map(h=>h.rev), growths=recent.map(h=>h.growth||0);
+  const minR=Math.min(...revs)*0.95, maxR=Math.max(...revs)*1.05;
+  const minG=Math.min(...growths)-5, maxG=Math.max(...growths)+5;
+  const tx=i=>p.l+(i/(recent.length-1))*iW;
+  const tyR=v=>p.t+(1-(v-minR)/(maxR-minR))*iH;
+  const tyG=v=>p.t+(1-(v-minG)/(maxG-minG))*iH;
+  const rPath=recent.map((h,i)=>`${i===0?'M':'L'}${tx(i).toFixed(1)},${tyR(h.rev).toFixed(1)}`).join(' ');
+  const gPath=recent.map((h,i)=>`${i===0?'M':'L'}${tx(i).toFixed(1)},${tyG(h.growth||0).toFixed(1)}`).join(' ');
+  const xLbls=recent.map((h,i)=>i%3===0?`<text x="${tx(i).toFixed(1)}" y="${H-5}" text-anchor="middle" font-size="9" fill="var(--text3)">${h.period}</text>`:'').join('');
+  // 散点图
+  const sData=COMPANIES.filter(co=>REAL_DATA[co.id]).map(co=>({co,d:getCompanyData(co),isMe:co.id===c.id})).filter(x=>x.d.growth!=null);
+  const SW=480,SH=200,SP={t:20,r:20,b:40,l:50};
+  const siW=SW-SP.l-SP.r,siH=SH-SP.t-SP.b;
+  const allG=sData.map(x=>x.d.growth),allM=sData.map(x=>x.d.margin);
+  const gMin=Math.min(...allG)-5,gMax=Math.max(...allG)+5,mMin=Math.min(...allM)-3,mMax=Math.max(...allM)+3;
+  const sdX=g=>SP.l+(g-gMin)/(gMax-gMin)*siW;
+  const sdY=m=>SP.t+(1-(m-mMin)/(mMax-mMin))*siH;
+  const dots=sData.map(x=>{
+    const dcx=sdX(x.d.growth).toFixed(1),dcy=sdY(x.d.margin).toFixed(1),dr=x.isMe?8:5;
+    return `<circle cx="${dcx}" cy="${dcy}" r="${dr}" fill="${x.co.color}" opacity="${x.isMe?1:0.7}" stroke="${x.isMe?'var(--text)':'none'}" stroke-width="${x.isMe?2:0}"><title>${x.co.name}: 增速${x.d.growth.toFixed(1)}% 毛利率${x.d.margin.toFixed(1)}%</title></circle>
+    <text x="${+dcx+dr+2}" y="${+dcy+4}" font-size="9" fill="${x.isMe?'var(--text)':'var(--text3)'}" font-weight="${x.isMe?700:400}">${x.isMe?x.co.name:x.co.name.slice(0,3)}</text>`;
+  }).join('');
+  function gridLines(min,max,steps,toY,unit) {
+    return Array.from({length:steps+1},(_,i)=>{const v=min+i*(max-min)/steps;const y=toY(v).toFixed(1);return `<line x1="${p.l}" y1="${y}" x2="${W-p.r}" y2="${y}" stroke="var(--border)" stroke-width="0.5"/><text x="${p.l-4}" y="${+y+3}" text-anchor="end" font-size="9" fill="var(--text3)">${unit==='k'&&v>999?(v/1000).toFixed(0)+'k':v.toFixed(0)}${unit==='%'?'%':''}</text>`;}).join('');
+  }
+  container.innerHTML = `
+    <div class="chart-area" style="margin-bottom:14px">
+      <div class="section-title">📈 近12季度营收折线图</div>
+      <div class="chart-legend" style="margin-bottom:6px"><div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>营收(亿)</div></div>
+      <div class="line-chart-wrap"><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px">
+        ${gridLines(minR,maxR,4,tyR,'k')}
+        <path d="${rPath}" stroke="var(--accent)" stroke-width="2" fill="none"/>
+        ${recent.map((h,i)=>`<circle cx="${tx(i).toFixed(1)}" cy="${tyR(h.rev).toFixed(1)}" r="${h.isCurrent?5:3}" fill="${h.isCurrent?'var(--yellow)':'var(--accent)'}" stroke="var(--card)" stroke-width="1.5"><title>${h.period}: ¥${h.rev.toFixed(0)}亿</title></circle>`).join('')}
+        ${xLbls}
+      </svg></div>
+    </div>
+    <div class="chart-area" style="margin-bottom:14px">
+      <div class="section-title">📊 近12季度同比增速折线图</div>
+      <div class="line-chart-wrap"><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px">
+        ${gridLines(minG,maxG,4,tyG,'%')}
+        <line x1="${p.l}" y1="${tyG(0).toFixed(1)}" x2="${W-p.r}" y2="${tyG(0).toFixed(1)}" stroke="var(--red)" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+        <path d="${gPath}" stroke="var(--green)" stroke-width="2" fill="none"/>
+        ${recent.map((h,i)=>{const g=h.growth||0;return `<circle cx="${tx(i).toFixed(1)}" cy="${tyG(g).toFixed(1)}" r="${h.isCurrent?5:3}" fill="${h.isCurrent?'var(--yellow)':g>=0?'var(--green)':'var(--red)'}" stroke="var(--card)" stroke-width="1.5"><title>${h.period}: ${g>=0?'+':''}${g.toFixed(1)}%</title></circle>`;}).join('')}
+        ${xLbls}
+      </svg></div>
+    </div>
+    <div class="chart-area">
+      <div class="section-title">🔵 增速 vs 毛利率散点图（真实数据公司）</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px">${c.name}用大圆标注 · 越右增速越快 · 越高毛利越好</div>
+      <div class="line-chart-wrap"><svg width="${SW}" height="${SH}" viewBox="0 0 ${SW} ${SH}" style="width:100%;max-width:${SW}px">
+        <line x1="${SP.l}" y1="${SP.t}" x2="${SP.l}" y2="${SH-SP.b}" stroke="var(--border)"/>
+        <line x1="${SP.l}" y1="${SH-SP.b}" x2="${SW-SP.r}" y2="${SH-SP.b}" stroke="var(--border)"/>
+        <line x1="${sdX(0).toFixed(1)}" y1="${SP.t}" x2="${sdX(0).toFixed(1)}" y2="${SH-SP.b}" stroke="var(--red)" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.5"/>
+        <text x="${SW/2}" y="${SH-3}" text-anchor="middle" font-size="10" fill="var(--text3)">同比增速 →</text>
+        ${dots}
+      </svg></div>
+    </div>`;
+}
+
+// ====================== 跨公司关联解读 ======================
+function openCrossAnalysis() {
+  const realCos = COMPANIES.filter(c => REAL_DATA[c.id]);
+  const dm = {};
+  realCos.forEach(c => { dm[c.id] = getCompanyData(c); });
+  const find = id => COMPANIES.find(x => x.id === id);
+  const cloudCos=[{c:find('msft'),label:'Azure (Microsoft)'},{c:find('googl'),label:'Google Cloud'},{c:find('amzn'),label:'AWS (Amazon)'},{c:find('baba'),label:'阿里云'},{c:find('bidu'),label:'百度智能云'}].filter(x=>x.c&&dm[x.c.id]);
+  const adCos=[{c:find('meta'),label:'Meta'},{c:find('googl'),label:'Alphabet'},{c:find('tencent'),label:'腾讯'},{c:find('bytedance'),label:'字节跳动'},{c:find('ks'),label:'快手'},{c:find('bidu'),label:'百度'}].filter(x=>x.c&&dm[x.c.id]);
+  const ecCos=[{c:find('amzn'),label:'Amazon'},{c:find('baba'),label:'阿里巴巴'},{c:find('jd'),label:'京东'},{c:find('pdd'),label:'拼多多'},{c:find('meituan'),label:'美团'}].filter(x=>x.c&&dm[x.c.id]);
+  function renderBar(list,key,unit,title,note) {
+    const vals=list.map(x=>({...x,val:dm[x.c.id]?.[key]||0}));
+    vals.sort((a,b)=>b.val-a.val);
+    const max=Math.max(...vals.map(x=>x.val))||1;
+    return `<div class="cross-section"><div class="cross-title">${title}</div>
+      ${vals.map(x=>`<div class="cross-row">
+        <div class="cross-co" style="color:${x.c.color}">${x.label}</div>
+        <div class="cross-bar-bg"><div class="cross-bar-fill" style="width:${((x.val/max)*100).toFixed(0)}%;background:${x.c.color};opacity:0.8"></div></div>
+        <div class="cross-num" style="color:${x.val>=0?'var(--green)':'var(--red)'}">${x.val>=0?'+':''}${x.val.toFixed(1)}${unit}</div>
+      </div>`).join('')}
+      <div style="margin-top:10px;font-size:12px;color:var(--text2);line-height:1.7;border-top:1px solid var(--border);padding-top:10px">${note}</div>
+    </div>`;
+  }
+  const nvdaG=dm['nvda']?.growth||0;
+  document.getElementById('crossContent').innerHTML = `
+    <div class="cross-section" style="background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(99,102,241,0.05))">
+      <div class="cross-title">🤖 AI算力与云计算生态</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.75">NVIDIA增速${nvdaG>50?'仍处高位':'回落至'}+${nvdaG.toFixed(0)}%，是三大云厂商AI投入的直接受益者。Azure/Google Cloud/AWS竞争激烈，${dm['msft']?.growth>dm['googl']?.growth?'Azure当前增速领先':'Google Cloud增速反超'}。阿里云恢复高增长，国内AI升级提速。数据中心资本开支热潮仍未结束。</p>
+    </div>
+    ${renderBar(cloudCos,'growth','%','☁️ 云服务增速对比（整体公司增速近似）',`云计算是中美科技最重要共同赛道。${dm['msft']?.growth>dm['googl']?.growth?'Azure以AI Copilot为核心领先Google Cloud。':'Google Cloud增速反超Azure，Gemini AI整合效果显现。'}阿里云重回高增长，国内云AI化升级加速。`)}
+    ${renderBar(adCos,'growth','%','📢 广告业务增速对比',`广告市场：Meta凭借AI精准广告保持高增速高毛利。腾讯/字节的广告与国内消费复苏高度相关。百度广告受AI搜索替代压力最明显。${dm['meta']?.growth>dm['tencent']?.growth?'Meta增速领先腾讯，中美广告市场分化显现。':'腾讯视频号商业化加速，广告增速亮眼。'}`)}
+    ${renderBar(ecCos,'revenue','亿','🛒 电商营收规模对比',`电商格局：Amazon营收规模最大但AWS贡献高毛利支撑利润。拼多多增速${dm['pdd']?.growth>15?'仍强劲':'显著放缓'}，价格战红利趋于饱和。阿里云+AI是确定性增量。京东自营模式毛利率垫底但韧性强。`)}
+    ${renderBar(realCos.map(c=>({c,label:c.name})),'margin','%','💎 全平台毛利率对比',`毛利率：Meta/NVIDIA等纯软件/硬件AI平台（~80%/~75%）远高于电商/硬件（Amazon~50%/Apple~47%/京东~17%）。拼多多（~75%）以轻资产平台模式实现极高毛利，是中国电商异类。`)}
+    <div style="margin-top:8px;font-size:11px;color:var(--text3);text-align:center">⚠️ 以上分析基于整体公司增速近似替代业务线，仅供参考，不构成投资建议</div>`;
+  document.getElementById('crossModal').classList.add('open');
+}
+
+// ====================== PDF导出 ======================
+function exportFavPDF() {
+  const favCos = COMPANIES.filter(c => favSet.has(c.id));
+  const target = favCos.length > 0 ? favCos : sortedCompanies(filterCompanies()).slice(0, 12);
+  if (!target.length) { alert('请先收藏公司，或当前筛选结果为空'); return; }
+  const content = target.map(c => {
+    const d=getCompanyData(c), val=VALUATION[c.id], isReal=!!REAL_DATA[c.id];
+    return `<div style="page-break-inside:avoid;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:36px;height:36px;border-radius:8px;background:${c.color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700">${c.name[0]}</div>
+        <div><div style="font-size:15px;font-weight:700;color:#1e293b">${c.name} <span style="font-size:12px;color:#64748b">${c.ticker}</span></div>
+        <div style="font-size:11px;color:#94a3b8">${c.region} · ${c.industry} · ${isReal?'✅真实':'⚠️模拟'}</div></div>
+        <div style="margin-left:auto;text-align:right"><div style="font-size:18px;font-weight:800;color:#3b82f6">¥${d.rev.toFixed(0)}亿</div>
+        <div style="font-size:12px;color:${d.growth>=0?'#10b981':'#ef4444'}">${d.growth>=0?'+':''}${d.growth.toFixed(1)}% yoy</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:12px">
+        <div><span style="color:#94a3b8">净利润</span><br><strong style="color:${d.profit>=0?'#10b981':'#ef4444'}">¥${d.profit.toFixed(1)}亿</strong></div>
+        <div><span style="color:#94a3b8">毛利率</span><br><strong>${d.margin.toFixed(1)}%</strong></div>
+        <div><span style="color:#94a3b8">市盈率</span><br><strong>${val?.pe?val.pe+'x':'N/A'}</strong></div>
+        <div><span style="color:#94a3b8">市销率</span><br><strong>${val?.ps?val.ps+'x':'N/A'}</strong></div>
+      </div>
+    </div>`;
+  }).join('');
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>财报摘要 ${curYear}Q${curQ}</title>
+  <style>body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;margin:0;padding:24px;color:#1e293b;max-width:860px;margin:auto}@media print{.np{display:none}}</style></head><body>
+  <div style="background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;border-radius:10px;padding:20px 24px;margin-bottom:20px">
+    <h1 style="font-size:20px;margin:0 0 6px">萧炎的互联网财报摘要</h1>
+    <p style="font-size:13px;opacity:0.85;margin:0">${curYear}年Q${curQ} · ${favCos.length>0?'自选':'筛选'}公司 · 共${target.length}家 · ${new Date().toLocaleDateString('zh-CN')}</p>
+  </div>${content}
+  <div style="margin-top:16px;text-align:center;font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px">⚠️ 本报告由萧炎财报系统自动生成，不构成投资建议</div>
+  <div class="np" style="text-align:center;margin-top:20px"><button onclick="window.print()" style="background:#3b82f6;color:#fff;border:none;padding:12px 32px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">🖨️ 打印/保存PDF</button></div>
+  </body></html>`);
+  w.document.close();
+}
+
 // 暗黑模式
 function toggleDark() {
   const dark = document.body.classList.toggle('dark');
@@ -1669,6 +2161,9 @@ function switchTab(idx) {
   if (idx === 3) buildSummary(curCompany);
   if (idx === 4) buildInsight(curCompany);
   if (idx === 5) buildOrg(curCompany);
+  if (idx === 6) buildValuation(curCompany);
+  if (idx === 7) buildSegment(curCompany);
+  if (idx === 8) buildCharts(curCompany);
   // 更新URL
   const url = new URL(location.href);
   url.searchParams.set('tab', idx);
