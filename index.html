@@ -238,12 +238,37 @@
   .season-points { display: flex; gap: 12px; flex-wrap: wrap; }
   .season-point { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 12px; color: var(--text2); cursor: pointer; transition: all 0.15s; }
   .season-point:hover { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,0.05); }
+  /* 核心解读模块 */
+  .core-interp { margin: 0 24px 12px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--card); }
+  .core-interp-header { padding: 13px 18px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: var(--card); transition: background 0.15s; border-bottom: 1px solid transparent; }
+  .core-interp-header:hover { background: var(--card2); }
+  .core-interp.open .core-interp-header { border-bottom-color: var(--border); }
+  .core-interp-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .core-interp-meta { font-size: 12px; color: var(--text3); display: flex; align-items: center; gap: 10px; }
+  .core-interp-body { display: none; padding: 20px; }
+  .core-interp.open .core-interp-body { display: block; }
+  .interp-macro { background: linear-gradient(135deg, rgba(59,130,246,0.05), rgba(99,102,241,0.05)); border: 1px solid rgba(99,102,241,0.15); border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
+  .interp-macro-title { font-size: 12px; font-weight: 700; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+  .interp-macro-text { font-size: 14px; color: var(--text2); line-height: 1.85; }
+  .interp-macro-text strong { color: var(--text); }
+  .interp-companies { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; margin-top: 4px; }
+  .interp-co-card { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; cursor: pointer; transition: all 0.15s; }
+  .interp-co-card:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(59,130,246,0.12); }
+  .interp-co-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .interp-co-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .interp-co-name { font-size: 13px; font-weight: 700; flex: 1; }
+  .interp-co-growth { font-size: 13px; font-weight: 800; }
+  .interp-co-text { font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .interp-co-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
+  .interp-co-tag { font-size: 10px; padding: 1px 6px; border-radius: 4px; background: rgba(0,0,0,0.06); color: var(--text3); }
+  .interp-section-title { font-size: 13px; font-weight: 700; color: var(--text2); margin: 16px 0 10px; display: flex; align-items: center; gap: 6px; }
+  .interp-section-title::before { content: ''; display: block; width: 3px; height: 13px; background: var(--accent); border-radius: 2px; }
+  @media(max-width:640px) {
     .header, .time-bar, .filters { padding: 12px 16px; }
     .table-wrap { padding: 0 16px 16px; }
     .modal { border-radius: 12px 12px 0 0; max-height: 95vh; }
     .modal-bg { padding: 0; align-items: flex-end; }
   }
-  @media(max-width:640px) {
   body.dark { --bg:#0f172a; --card:#1e293b; --card2:#0f172a; --border:#334155; --text:#e2e8f0; --text2:#94a3b8; --text3:#475569; }
   body.dark .history-table th { border-bottom-color: #334155; }
   body.dark .history-table td { border-bottom-color: rgba(148,163,184,0.1); }
@@ -319,6 +344,17 @@
 </div>
 
 <div class="season-banner" id="seasonBanner"></div>
+
+<div class="core-interp" id="coreInterp">
+  <div class="core-interp-header" onclick="toggleCoreInterp()">
+    <div class="core-interp-title">📋 本季核心解读 <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:4px">· 基于真实财报数据自动生成</span></div>
+    <div class="core-interp-meta">
+      <span id="coreInterpPeriod"></span>
+      <span id="coreInterpToggle" style="font-size:18px;transition:transform 0.2s">›</span>
+    </div>
+  </div>
+  <div class="core-interp-body" id="coreInterpBody"></div>
+</div>
 
 <div class="table-wrap">
   <table id="mainTable">
@@ -669,6 +705,7 @@ function init() {
   }
   renderTable();
   buildSeasonBanner();
+  buildCoreInterp();
   document.getElementById('lastUpdate').textContent = `${new Date().getMonth()+1}月${new Date().getDate()}日 已更新`;
   // 如果URL有公司参数，延迟打开详情
   if (params.get('c')) {
@@ -707,7 +744,7 @@ function buildQuarterTabs() {
     const btn = document.createElement('button');
     btn.className = 'q-tab' + (q === curQ ? ' active' : '');
     btn.textContent = `Q${q}`;
-    btn.onclick = () => { curQ = q; buildQuarterTabs(); updatePeriodDisplay(); renderTable(); };
+    btn.onclick = () => { curQ = q; buildQuarterTabs(); updatePeriodDisplay(); renderTable(); buildSeasonBanner(); buildCoreInterp(); };
     cont.appendChild(btn);
   }
 }
@@ -720,6 +757,7 @@ function onYearChange() {
   updatePeriodDisplay();
   renderTable();
   buildSeasonBanner();
+  buildCoreInterp();
 }
 
 function prevPeriod() {
@@ -729,6 +767,7 @@ function prevPeriod() {
   updatePeriodDisplay();
   renderTable();
   buildSeasonBanner();
+  buildCoreInterp();
 }
 
 function nextPeriod() {
@@ -739,6 +778,7 @@ function nextPeriod() {
   updatePeriodDisplay();
   renderTable();
   buildSeasonBanner();
+  buildCoreInterp();
 }
 
 function updatePeriodDisplay() {
@@ -945,6 +985,244 @@ function openCompareModal() {
 }
 
 
+
+// ====================== 核心解读 ======================
+function toggleCoreInterp() {
+  const el = document.getElementById('coreInterp');
+  const toggle = document.getElementById('coreInterpToggle');
+  el.classList.toggle('open');
+  toggle.style.transform = el.classList.contains('open') ? 'rotate(90deg)' : '';
+}
+
+function buildCoreInterp() {
+  document.getElementById('coreInterpPeriod').textContent = `${curYear}年 Q${curQ}`;
+  const realCompanies = COMPANIES.filter(c => REAL_DATA[c.id]);
+  const allData = realCompanies.map(c => ({c, d: getCompanyData(c), hist: genHistory(c)}));
+  const withGrowth = allData.filter(x => x.d.growth !== null && !isNaN(x.d.growth));
+  if (!withGrowth.length) { document.getElementById('coreInterpBody').innerHTML = '<p style="color:var(--text3);padding:12px">暂无真实数据可供解读</p>'; return; }
+
+  withGrowth.sort((a,b) => b.d.growth - a.d.growth);
+  const cnData = withGrowth.filter(x => x.c.region === '中国');
+  const usData = withGrowth.filter(x => x.c.region === '美国');
+  const cnAvg = cnData.reduce((s,x) => s+x.d.growth, 0) / (cnData.length||1);
+  const usAvg = usData.reduce((s,x) => s+x.d.growth, 0) / (usData.length||1);
+  const beatCount = allData.filter(x => x.d.beatStatus==='beat').length;
+  const missCount = allData.filter(x => x.d.beatStatus==='miss').length;
+
+  // 增速加速/放缓对比2季度前
+  let accelList = [], decelList = [];
+  withGrowth.forEach(({c, d, hist}) => {
+    const curIdx = hist.findIndex(h => h.y===curYear && h.q===curQ);
+    const prev2 = curIdx >= 2 ? hist[curIdx-2] : null;
+    if (prev2 && prev2.growth !== null) {
+      const delta = d.growth - prev2.growth;
+      if (delta > 5) accelList.push({c, d, delta});
+      else if (delta < -5) decelList.push({c, d, delta});
+    }
+  });
+  accelList.sort((a,b) => b.delta - a.delta);
+  decelList.sort((a,b) => a.delta - b.delta);
+
+  // ---- 宏观段落生成 ----
+  const stronger = cnAvg > usAvg ? '中国' : '美国';
+  const weaker = stronger === '中国' ? '美国' : '中国';
+  const strongerAvg = Math.max(cnAvg, usAvg);
+  const weakerAvg = Math.min(cnAvg, usAvg);
+
+  const topCo = withGrowth[0];
+  const botCo = withGrowth[withGrowth.length-1];
+  const marginTop = [...withGrowth].sort((a,b) => b.d.margin - a.d.margin)[0];
+
+  // AI公司特判
+  const nvda = withGrowth.find(x => x.c.id === 'nvda');
+  const aiSentence = nvda && nvda.d.growth > 50
+    ? `AI算力赛道方面，<strong>${nvda.c.name}</strong>以 <strong>+${nvda.d.growth.toFixed(0)}%</strong> 的增速持续领跑，Blackwell/Hopper等新架构芯片供不应求，数据中心资本开支热潮未退。`
+    : nvda && nvda.d.growth > 0
+    ? `AI算力赛道方面，<strong>${nvda.c.name}</strong>本季增速回落至 +${nvda.d.growth.toFixed(0)}%，高基数效应显现，但云厂商AI投入未见减速。`
+    : '';
+
+  // 中美互联网对比句
+  const crossSentence = `本季度<strong>${stronger}互联网整体表现更强</strong>，均增速 ${strongerAvg.toFixed(1)}%，高于${weaker}的 ${weakerAvg.toFixed(1)}%。${stronger==='中国' ? '国内消费复苏叠加AI应用加速变现，推动整体向好。' : '美元强势叠加AI资本支出持续扩张，美国科技韧性占优。'}`;
+
+  // 超预期/低预期
+  const beatSentence = beatCount > missCount
+    ? `本季度整体业绩质量较好，<strong>${beatCount}家</strong>公司超出市场预期，仅 ${missCount} 家低于预期，财报季整体偏乐观。`
+    : missCount > beatCount
+    ? `本季度有 <strong>${missCount}家</strong> 公司低于市场预期，超出预期仅 ${beatCount} 家，需警惕估值修正压力。`
+    : `本季超预期与低预期公司数量相当（各${beatCount}家），整体预期兑现度中性。`;
+
+  // 增速极值
+  const extremeSentence = `增速分化明显：<strong>${topCo.c.name}</strong> 以 <strong style="color:var(--green)">+${topCo.d.growth.toFixed(0)}%</strong> 领跑，<strong>${botCo.c.name}</strong> 以 <strong style="color:var(--red)">${botCo.d.growth.toFixed(0)}%</strong> 垫底，首尾差距 ${(topCo.d.growth - botCo.d.growth).toFixed(0)}pp，行业内部分化程度${(topCo.d.growth - botCo.d.growth) > 80 ? '极高' : '较大'}。`;
+
+  // 毛利率
+  const marginSentence = `盈利能力上，<strong>${marginTop.c.name}</strong> 毛利率最高，达 <strong>${marginTop.d.margin.toFixed(1)}%</strong>，${marginTop.d.margin > 70 ? '纯软件/平台模式带来极强的规模效应。' : marginTop.d.margin > 50 ? '显示出较强的定价权与业务结构优势。' : '处于行业较高水平。'}`;
+
+  const macroPara = [crossSentence, beatSentence, extremeSentence, marginSentence, aiSentence].filter(Boolean).join('<br><br>');
+
+  // ---- 逐公司一句话解读 ----
+  function getCoInterp(c, d, hist) {
+    const isReal = !!REAL_DATA[c.id];
+    const curIdx = hist.findIndex(h => h.y===curYear && h.q===curQ);
+    const prev4 = curIdx >= 4 ? hist[curIdx-4] : null;
+    const prev1 = curIdx >= 1 ? hist[curIdx-1] : null;
+    const qoq = prev1 ? ((d.rev - prev1.rev)/prev1.rev*100) : null;
+    const accel = prev4 ? (d.growth - prev4.growth) : null; // 与去年同期增速比
+
+    // 生成标签
+    const tags = [];
+    if (!isReal) tags.push('模拟');
+    if (d.beatStatus === 'beat') tags.push('超预期');
+    else if (d.beatStatus === 'miss') tags.push('低预期');
+    if (accel !== null && accel > 5) tags.push('加速');
+    else if (accel !== null && accel < -5) tags.push('放缓');
+    if (d.margin > 60) tags.push('超高毛利');
+    else if (d.margin < 20) tags.push('低毛利');
+
+    // 生成解读文字
+    let text = '';
+    const growthStr = d.growth >= 0 ? `同比增长 +${d.growth.toFixed(1)}%` : `同比下滑 ${Math.abs(d.growth).toFixed(1)}%`;
+    const qoqStr = qoq !== null ? `，环比${qoq >= 0 ? '增长' : '下降'} ${Math.abs(qoq).toFixed(1)}%` : '';
+
+    if (c.id === 'nvda') {
+      text = d.growth > 100 ? `AI超级周期核心受益者，${growthStr}${qoqStr}。数据中心业务爆发式增长，供给仍是主要瓶颈。`
+           : d.growth > 30 ? `Blackwell架构驱动增长，${growthStr}${qoqStr}。增速较前高峰回落，但绝对体量和利润率均处历史高位。`
+           : `${growthStr}${qoqStr}，AI算力需求趋于平稳，市场关注下一代架构的产品周期。`;
+    } else if (c.id === 'tencent') {
+      text = d.growth > 15 ? `${growthStr}${qoqStr}，视频号商业化加速、小游戏爆发、微信生态AI化变现是核心驱动，毛利率达 ${d.margin.toFixed(1)}%。`
+           : d.growth > 5 ? `${growthStr}${qoqStr}，游戏+广告双轮驱动，AI功能逐步渗透微信生态，毛利率稳健。`
+           : `${growthStr}${qoqStr}，增速承压，国内游戏竞争加剧，关注AI工具变现进展。`;
+    } else if (c.id === 'alibaba') {
+      text = d.growth > 10 ? `${growthStr}${qoqStr}，云+AI业务重回高增长，国内电商在价格竞争中企稳，"用AI重构阿里"战略初见成效。`
+           : d.growth > 0 ? `${growthStr}${qoqStr}，电商增速趋缓但云服务加速，整体处于战略调整期。`
+           : `${growthStr}${qoqStr}，国内电商竞争压力持续，云+AI是核心增长极，转型效果需观察。`;
+    } else if (c.id === 'pdd') {
+      text = d.growth > 50 ? `${growthStr}${qoqStr}，极致低价策略持续奏效，Temu海外扩张仍处红利期，市占率快速扩大。`
+           : d.growth > 15 ? `${growthStr}${qoqStr}，国内低价竞争趋于饱和，Temu面临监管压力，增速中枢下移但盈利能力提升。`
+           : `${growthStr}${qoqStr}，高速增长期结束，需关注货币化率和利润质量的可持续性。`;
+    } else if (c.id === 'jd') {
+      text = d.growth > 15 ? `${growthStr}${qoqStr}，3C+家电品类旺盛，即时零售业务提速，自营供应链壁垒显现。`
+           : d.growth > 5 ? `${growthStr}${qoqStr}，品类增速分化，自营毛利率企稳，物流板块盈利改善。`
+           : `${growthStr}${qoqStr}，竞争压力下增速承压，低价策略对毛利率形成侵蚀。`;
+    } else if (c.id === 'meituan') {
+      text = d.growth > 20 ? `${growthStr}${qoqStr}，核心本地商业稳健增长，即时零售进入高速扩张期，海外业务（Keeta）贡献新增量。`
+           : d.growth > 8 ? `${growthStr}${qoqStr}，外卖+到店双引擎运转，即时零售渗透率持续提升。`
+           : `${growthStr}${qoqStr}，增速放缓，竞争格局变化及抖音本地生活扩张值得持续关注。`;
+    } else if (c.id === 'baidu') {
+      text = d.growth > 15 ? `${growthStr}${qoqStr}，AI搜索重构产品形态，文心大模型API调用量爆发，广告业务受益AI流量增长。`
+           : d.growth > 0 ? `${growthStr}${qoqStr}，搜索广告基本盘稳固，AI大模型变现路径逐渐清晰，智能云业务加速。`
+           : `${growthStr}${qoqStr}，传统搜索流量受AI冲击，转型阵痛期，ERNIE Bot商业化进展是核心观测点。`;
+    } else if (c.id === 'bytedance') {
+      text = d.growth > 40 ? `${growthStr}${qoqStr}，抖音广告+电商双飞轮高速运转，TikTok海外变现加速，整体保持高景气。`
+           : d.growth > 20 ? `${growthStr}${qoqStr}，国内增速趋稳但海外TikTok仍处扩张期，AI工具矩阵加速渗透。`
+           : `${growthStr}${qoqStr}，增速放缓，TikTok面临监管不确定性，关注国内AI竞争格局演变。`;
+    } else if (c.id === 'kuaishou') {
+      text = d.growth > 20 ? `${growthStr}${qoqStr}，电商GMV高增长驱动货币化，广告收入受益直播电商生态繁荣，毛利率改善趋势明显。`
+           : d.growth > 8 ? `${growthStr}${qoqStr}，核心用户时长稳固，电商变现效率提升，关注与抖音的差异化竞争策略。`
+           : `${growthStr}${qoqStr}，竞争压力下增速承压，需加速AI能力赋能内容推荐和商业化。`;
+    } else if (c.id === 'aapl') {
+      text = d.growth > 10 ? `${growthStr}${qoqStr}，iPhone新产品周期带动硬件复苏，服务业务（App Store/Apple TV+）持续高增，毛利率创历史新高。`
+           : d.growth > 0 ? `${growthStr}${qoqStr}，硬件需求平稳，服务业务成为盈利核心，Apple Intelligence AI功能逐步铺开。`
+           : `${growthStr}${qoqStr}，硬件换机周期延长，中国市场份额受压，AI功能落地进度是下季关键。`;
+    } else if (c.id === 'msft') {
+      text = d.growth > 20 ? `${growthStr}${qoqStr}，Azure AI云服务爆发增长，Copilot企业渗透率快速提升，营业利润率创新高。`
+           : d.growth > 10 ? `${growthStr}${qoqStr}，云+AI双轮驱动，Office 365商业版续费率健康，AI变现效益初现。`
+           : `${growthStr}${qoqStr}，增速趋缓，关注Azure市占率与OpenAI投资回报的协同效应。`;
+    } else if (c.id === 'googl') {
+      text = d.growth > 15 ? `${growthStr}${qoqStr}，搜索广告韧性超预期，Google Cloud AI需求爆发，YouTube广告持续复苏。`
+           : d.growth > 8 ? `${growthStr}${qoqStr}，广告业务稳健，Gemini AI整合加速，Cloud增速位居行业第二。`
+           : `${growthStr}${qoqStr}，AI搜索对传统广告收入存在替代压力，关注Search AI Overviews的变现模式演进。`;
+    } else if (c.id === 'meta') {
+      text = d.growth > 20 ? `${growthStr}${qoqStr}，AI驱动广告精准度大幅提升，Reels货币化加速，Reality Labs亏损收窄，AI眼镜成新亮点。`
+           : d.growth > 10 ? `${growthStr}${qoqStr}，广告业务景气，Llama开源战略构建生态，元宇宙投入逐步聚焦实用场景。`
+           : `${growthStr}${qoqStr}，增速放缓，重资产AI投入对短期利润形成压制，需观察广告ROI改善节奏。`;
+    } else if (c.id === 'amzn') {
+      text = d.growth > 15 ? `${growthStr}${qoqStr}，AWS AI云业务高增，电商广告变现效率提升，Prime会员经济持续强化。`
+           : d.growth > 8 ? `${growthStr}${qoqStr}，AWS稳步增长，电商物流效率优化推动利润率提升，广告业务成第三大驱动。`
+           : `${growthStr}${qoqStr}，增速放缓，关注AWS AI工作负载增长节奏和电商利润率改善空间。`;
+    } else {
+      // 通用解读
+      if (d.growth > 30) text = `高速增长阶段，${growthStr}${qoqStr}，${d.margin > 50 ? '高毛利模式下盈利质量卓越' : '规模效应逐渐释放'}。`;
+      else if (d.growth > 10) text = `稳健增长，${growthStr}${qoqStr}，核心业务竞争格局稳固，${d.beatStatus==='beat'?'超出市场预期':'符合市场预期'}。`;
+      else if (d.growth > 0) text = `低速增长阶段，${growthStr}${qoqStr}，增速趋缓，关注业务转型和新增长点的培育进展。`;
+      else text = `收入承压，${growthStr}${qoqStr}，需关注竞争格局变化和成本管控能力，等待增速拐点信号。`;
+    }
+    return { text, tags };
+  }
+
+  // 分组：明星/加速 / 稳健 / 警示
+  const stars = withGrowth.filter(x => x.d.growth > 20 || x.d.beatStatus === 'beat').slice(0, 6);
+  const cautions = withGrowth.filter(x => x.d.growth < 5 || x.d.beatStatus === 'miss');
+
+  function renderCoCards(list) {
+    return list.map(({c, d, hist}) => {
+      const {text, tags} = getCoInterp(c, d, hist);
+      const growthColor = d.growth >= 20 ? 'var(--green)' : d.growth >= 0 ? 'var(--accent)' : 'var(--red)';
+      return `<div class="interp-co-card" onclick="openDetail(COMPANIES.find(x=>x.id==='${c.id}'))">
+        <div class="interp-co-header">
+          <div class="interp-co-dot" style="background:${c.color}"></div>
+          <div class="interp-co-name">${c.name}</div>
+          <div class="interp-co-growth" style="color:${growthColor}">${d.growth>=0?'+':''}${d.growth.toFixed(1)}%</div>
+        </div>
+        <div class="interp-co-text">${text}</div>
+        ${tags.length ? `<div class="interp-co-tags">${tags.map(t=>`<span class="interp-co-tag">${t}</span>`).join('')}</div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  const accelHtml = accelList.length ? `
+    <div class="interp-section-title">📈 增速加速（vs 2季度前）</div>
+    <div class="interp-companies">
+      ${accelList.slice(0,4).map(({c,d,delta,hist})=>{
+        const {text,tags}=getCoInterp(c,d,genHistory(c));
+        return `<div class="interp-co-card" onclick="openDetail(COMPANIES.find(x=>x.id==='${c.id}'))">
+          <div class="interp-co-header">
+            <div class="interp-co-dot" style="background:${c.color}"></div>
+            <div class="interp-co-name">${c.name}</div>
+            <div class="interp-co-growth" style="color:var(--green)">+${d.growth.toFixed(1)}% <span style="font-size:10px;color:var(--green)">(↑${delta.toFixed(0)}pp)</span></div>
+          </div>
+          <div class="interp-co-text">${text}</div>
+          ${tags.length?`<div class="interp-co-tags">${tags.map(t=>`<span class="interp-co-tag">${t}</span>`).join('')}</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  const decelHtml = decelList.length ? `
+    <div class="interp-section-title">📉 增速放缓（vs 2季度前）</div>
+    <div class="interp-companies">
+      ${decelList.slice(0,4).map(({c,d,delta})=>{
+        const {text,tags}=getCoInterp(c,d,genHistory(c));
+        return `<div class="interp-co-card" onclick="openDetail(COMPANIES.find(x=>x.id==='${c.id}'))">
+          <div class="interp-co-header">
+            <div class="interp-co-dot" style="background:${c.color}"></div>
+            <div class="interp-co-name">${c.name}</div>
+            <div class="interp-co-growth" style="color:var(--red)">${d.growth>=0?'+':''}${d.growth.toFixed(1)}% <span style="font-size:10px;color:var(--red)">(↓${Math.abs(delta).toFixed(0)}pp)</span></div>
+          </div>
+          <div class="interp-co-text">${text}</div>
+          ${tags.length?`<div class="interp-co-tags">${tags.map(t=>`<span class="interp-co-tag">${t}</span>`).join('')}</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  document.getElementById('coreInterpBody').innerHTML = `
+    <div class="interp-macro">
+      <div class="interp-macro-title">📡 宏观判断</div>
+      <div class="interp-macro-text">${macroPara}</div>
+    </div>
+
+    ${stars.length ? `<div class="interp-section-title">⭐ 本季亮点公司</div>
+    <div class="interp-companies">${renderCoCards(stars)}</div>` : ''}
+
+    ${accelHtml}
+    ${decelHtml}
+
+    ${cautions.length ? `<div class="interp-section-title">⚠️ 需关注公司</div>
+    <div class="interp-companies">${renderCoCards(cautions.slice(0,6))}</div>` : ''}
+
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)">
+      ⚠️ 以上解读由系统基于真实财报数据规则生成，不构成投资建议。实际投资请以公司官方披露为准。
+    </div>
+  `;
+}
 
 // ====================== 本季看点 Banner ======================
 function buildSeasonBanner() {
