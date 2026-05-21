@@ -429,9 +429,9 @@
     <button class="share-btn" onclick="openGSearch()">🔍 搜索 <kbd style="font-size:10px;background:rgba(0,0,0,0.08);border:1px solid rgba(0,0,0,0.15);border-radius:3px;padding:1px 5px;margin-left:3px">K</kbd></button>
     <button class="share-btn" onclick="openCalendar()">📅 财报日历</button>
     <button class="share-btn" onclick="openPanorama()">🌐 全市场</button>
-    <button class="share-btn" onclick="copyShareLink()">🔗 分享</button>
     <button class="share-btn" onclick="openHeatmap()">🟨 热力图</button>
     <button class="share-btn" onclick="toggleDark()" id="darkBtn">🌙 暗黑</button>
+    <button class="share-btn" onclick="copyShareLink()">🔗 分享</button>
     <div class="update-badge"><div class="update-dot"></div><span id="lastUpdate">数据已更新</span></div>
   </div>
 </div>
@@ -672,11 +672,21 @@
   </div>
 </div>
 
+<!-- 财报日历弹窗 -->
+<div class="cal-bg" id="calendarModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="cal-modal" onclick="event.stopPropagation()">
+    <div style="padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(99,102,241,0.05))">
+      <div>
+        <h3 style="font-size:17px;font-weight:700">📅 财报日历</h3>
+        <p style="font-size:12px;color:var(--text3);margin-top:3px">未来3个月各公司财报电话会议时间表 · 点击查看详情</p>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('calendarModal').classList.remove('open')">✕</button>
+    </div>
+    <div id="calendarContent" style="padding:20px 24px;max-height:70vh;overflow-y:auto"></div>
+  </div>
+</div>
+
 <div class="transcript-bg" id="transcriptModal" onclick="if(event.target===this)this.classList.remove('open')">
-  <div class="transcript-modal">
-    <div class="transcript-header">
-      <div class="transcript-header-info">
-        <h3 id="tsTitle"></h3>
         <p id="tsMeta"></p>
         <div class="transcript-header-badges">
           <span class="e-tag past" id="tsBadgeQ"></span>
@@ -2248,6 +2258,79 @@ function closeHeatmapAndOpen(id) {
   document.getElementById('heatmapModal').classList.remove('open');
   const c = COMPANIES.find(x => x.id === id);
   if (c) openDetail(c);
+}
+
+// 财报日历
+function openCalendar() {
+  const today = new Date();
+  // 收集所有公司未来 90 天内的财报会议
+  const events = [];
+  COMPANIES.forEach(c => {
+    if (!c.nextCall || !c.nextCall.date) return;
+    const d = new Date(c.nextCall.date);
+    if (isNaN(d.getTime())) return;
+    const diffDays = Math.floor((d - today) / (24 * 3600 * 1000));
+    if (diffDays < -7 || diffDays > 120) return; // 显示过去7天到未来120天
+    events.push({ company: c, date: d, diffDays, raw: c.nextCall });
+  });
+  events.sort((a, b) => a.date - b.date);
+
+  if (events.length === 0) {
+    document.getElementById('calendarContent').innerHTML = '<div style="text-align:center;color:var(--text3);padding:60px 20px;font-size:14px">暂无即将到来的财报会议</div>';
+    document.getElementById('calendarModal').classList.add('open');
+    return;
+  }
+
+  // 按月分组
+  const monthGroups = {};
+  events.forEach(e => {
+    const key = `${e.date.getFullYear()}年 ${e.date.getMonth() + 1}月`;
+    if (!monthGroups[key]) monthGroups[key] = [];
+    monthGroups[key].push(e);
+  });
+
+  let html = '';
+  Object.keys(monthGroups).forEach(monthKey => {
+    html += `<div style="margin-bottom:24px">
+      <h4 style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">📆 ${monthKey} <span style="color:var(--text3);font-weight:400;font-size:12px;margin-left:8px">${monthGroups[monthKey].length} 场</span></h4>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));gap:10px">`;
+    monthGroups[monthKey].forEach(e => {
+      const c = e.company;
+      const day = e.date.getDate();
+      const weekDay = ['日','一','二','三','四','五','六'][e.date.getDay()];
+      const isPast = e.diffDays < 0;
+      const isToday = e.diffDays === 0;
+      const isSoon = e.diffDays > 0 && e.diffDays <= 7;
+      const statusBg = isPast ? 'rgba(148,163,184,0.10)' : isToday ? 'rgba(239,68,68,0.10)' : isSoon ? 'rgba(245,158,11,0.10)' : 'rgba(59,130,246,0.06)';
+      const statusBorder = isPast ? 'rgba(148,163,184,0.25)' : isToday ? 'rgba(239,68,68,0.4)' : isSoon ? 'rgba(245,158,11,0.4)' : 'var(--border)';
+      const statusLabel = isPast ? '已结束' : isToday ? '今日' : isSoon ? `${e.diffDays}天后` : `${e.diffDays}天后`;
+      const statusColor = isPast ? 'var(--text3)' : isToday ? 'var(--red)' : isSoon ? 'var(--yellow)' : 'var(--accent)';
+      html += `<div style="background:${statusBg};border:1px solid ${statusBorder};border-radius:10px;padding:12px;cursor:pointer;transition:all 0.2s" onclick="document.getElementById('calendarModal').classList.remove('open');openDetail(COMPANIES.find(x=>x.id==='${c.id}'))" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.06)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:32px;height:32px;background:${c.color};color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">${c.name[0]}</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text)">${c.name}</div>
+              <div style="font-size:10px;color:var(--text3)">${c.ticker} · ${c.region}</div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:18px;font-weight:700;color:${statusColor};line-height:1">${day}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">周${weekDay}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text2);padding-top:8px;border-top:1px dashed ${statusBorder}">
+          <span>⏰ ${e.raw.time || '-'}</span>
+          <span style="background:${statusColor};color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600">${statusLabel}</span>
+        </div>
+        ${e.raw.topic ? `<div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.4">📋 ${e.raw.topic}</div>` : ''}
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  document.getElementById('calendarContent').innerHTML = html;
+  document.getElementById('calendarModal').classList.add('open');
 }
 
 
