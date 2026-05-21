@@ -1,0 +1,53 @@
+name: 📊 每日财报巡检
+
+on:
+  schedule:
+    # 每天北京时间 9:00 = UTC 1:00
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run filing check
+        id: check
+        run: node scripts/check-filings.mjs
+      - name: Update last-check timestamp
+        run: |
+          NOW=$(date -u +"%Y-%m-%d %H:%M UTC")
+          if grep -q '<meta name="last-filing-check"' index.html; then
+            sed -i "s|<meta name=\"last-filing-check\" content=\"[^\"]*\"|<meta name=\"last-filing-check\" content=\"$NOW\"|" index.html
+          else
+            sed -i "s|</head>|<meta name=\"last-filing-check\" content=\"$NOW\">\n</head>|" index.html
+          fi
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "chore: 每日财报巡检 $(date +%Y-%m-%d)"
+          git push || true
+      - name: Create issue if updates found
+        if: steps.check.outputs.has_updates == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('.github/last-check-report.md', 'utf8');
+            const updateCount = '${{ steps.check.outputs.update_count }}';
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🆕 发现 ${updateCount} 家公司有新财报 - ${new Date().toISOString().slice(0,10)}`,
+              body: report,
+              labels: ['data-update', 'automated']
+            });
