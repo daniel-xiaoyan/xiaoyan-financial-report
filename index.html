@@ -1045,6 +1045,12 @@ function init() {
   buildSeasonBanner();
   buildCoreInterp();
   document.getElementById('lastUpdate').textContent = `${new Date().getMonth()+1}月${new Date().getDate()}日 已更新`;
+  // 显示自动巡检时间
+  const checkMeta = document.querySelector('meta[name="last-filing-check"]');
+  if (checkMeta && checkMeta.content) {
+    const span = document.getElementById('lastUpdate');
+    if (span) span.title = `🤖 自动巡检 SEC EDGAR：${checkMeta.content}`;
+  }
   // 如果URL有公司参数，延迟打开详情
   if (params.get('c')) {
     const c = COMPANIES.find(x => x.id === params.get('c'));
