@@ -1,5 +1,5 @@
 {
-  "lastCheck": "2026-07-24",
+  "lastCheck": "2026-07-25",
   "knownFilings": {
     "aapl": "0000320193-26-000013",
     "msft": "0001193125-26-191507",
@@ -7,14 +7,5 @@
     "amzn": "0001018724-26-000014",
     "nvda": "0001045810-26-000052"
   },
-  "lastUpdates": [
-    {
-      "company": "Alphabet",
-      "id": "googl",
-      "form": "10-Q",
-      "filingDate": "2026-07-23",
-      "reportDate": "2026-06-30",
-      "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001652044&type=10-Q&dateb=&owner=include&count=40"
-    }
-  ]
+  "lastUpdates": []
 }

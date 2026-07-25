@@ -1,13 +1,10 @@
 # 📊 财报巡检报告
 
-**巡检时间**: 2026-07-24
+**巡检时间**: 2026-07-25
 
-## 🆕 发现 1 家公司有新财报
+## ✅ 暂无新财报
 
-- **Alphabet** (googl) — 10-Q | 财报期: 2026-06-30 | 提交日: 2026-07-23
-  [SEC 链接](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001652044&type=10-Q&dateb=&owner=include&count=40)
-
-👉 请尽快更新 `index.html` 中的 `REAL_DATA` 数据
+所有美股公司的财报数据均为最新。
 
 ## 📋 下次预计发布
 
