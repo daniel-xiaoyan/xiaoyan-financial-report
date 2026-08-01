@@ -1,12 +1,29 @@
 {
-  "lastCheck": "2026-07-31",
+  "lastCheck": "2026-08-01",
   "knownFilings": {
-    "aapl": "0000320193-26-000013",
+    "aapl": "0000320193-26-000020",
     "msft": "0001193125-26-323660",
     "googl": "0001652044-26-000071",
-    "amzn": "0001018724-26-000014",
+    "amzn": "0001018724-26-000026",
     "nvda": "0001045810-26-000052",
     "meta": "0001628280-26-050705"
   },
-  "lastUpdates": []
+  "lastUpdates": [
+    {
+      "company": "Apple",
+      "id": "aapl",
+      "form": "10-Q",
+      "filingDate": "2026-07-31",
+      "reportDate": "2026-06-27",
+      "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-Q&dateb=&owner=include&count=40"
+    },
+    {
+      "company": "Amazon",
+      "id": "amzn",
+      "form": "10-Q",
+      "filingDate": "2026-07-31",
+      "reportDate": "2026-06-30",
+      "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001018724&type=10-Q&dateb=&owner=include&count=40"
+    }
+  ]
 }
