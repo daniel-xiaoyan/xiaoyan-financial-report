@@ -1,15 +1,10 @@
 # 📊 财报巡检报告
 
-**巡检时间**: 2026-08-01
+**巡检时间**: 2026-08-02
 
-## 🆕 发现 2 家公司有新财报
+## ✅ 暂无新财报
 
-- **Apple** (aapl) — 10-Q | 财报期: 2026-06-27 | 提交日: 2026-07-31
-  [SEC 链接](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-Q&dateb=&owner=include&count=40)
-- **Amazon** (amzn) — 10-Q | 财报期: 2026-06-30 | 提交日: 2026-07-31
-  [SEC 链接](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001018724&type=10-Q&dateb=&owner=include&count=40)
-
-👉 请尽快更新 `index.html` 中的 `REAL_DATA` 数据
+所有美股公司的财报数据均为最新。
 
 ## 📋 下次预计发布
 
