@@ -1,10 +1,13 @@
 # 📊 财报巡检报告
 
-**巡检时间**: 2026-08-26
+**巡检时间**: 2026-08-27
 
-## ✅ 暂无新财报
+## 🆕 发现 1 家公司有新财报
 
-所有美股公司的财报数据均为最新。
+- **NVIDIA** (nvda) — 10-Q | 财报期: 2026-07-26 | 提交日: 2026-08-26
+  [SEC 链接](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001045810&type=10-Q&dateb=&owner=include&count=40)
+
+👉 请尽快更新 `index.html` 中的 `REAL_DATA` 数据
 
 ## 📋 下次预计发布
 
