@@ -1,11 +1,11 @@
 # 📊 财报巡检报告
 
-**巡检时间**: 2026-10-30
+**巡检时间**: 2026-10-31
 
 ## 🆕 发现 1 家公司有新财报
 
-- **Alphabet** (googl) — 10-Q | 财报期: 2026-09-30 | 提交日: 2026-10-29
-  [SEC 链接](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001652044&type=10-Q&dateb=&owner=include&count=40)
+- **Amazon** (amzn) — 10-Q | 财报期: 2026-09-30 | 提交日: 2026-10-30
+  [SEC 链接](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001018724&type=10-Q&dateb=&owner=include&count=40)
 
 👉 请尽快更新 `index.html` 中的 `REAL_DATA` 数据
 
